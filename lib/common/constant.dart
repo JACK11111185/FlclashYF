@@ -49,18 +49,19 @@ String _randomPipeId() {
 final defaultTextScaleFactor =
     WidgetsBinding.instance.platformDispatcher.textScaleFactor;
 
-/// How long the Core may spend on one delay test. It spends this twice in the
-/// worst case - once queueing for a slot, once on the probe itself - so the
-/// guard below has to outlast twice this value.
+/// How long the Core may spend on one delay test.
 const delayTestTimeoutDuration = Duration(seconds: 8);
-
 const delayTestGuardDuration = Duration(seconds: 30);
-
 const coreConnectionWaitDuration = Duration(seconds: 10);
 
-/// Keep at or below the Core's delay-test concurrency (`delayTestConcurrency`
-/// in core/common.go).
-const maxConcurrentDelayTests = 16;
+/// On iOS the Network Extension is deliberately capped at eight concurrent
+/// probes; desktop keeps the larger default.
+const _maxConcurrentDelayTestsDefault = 50;
+const _maxConcurrentDelayTestsIOS = 8;
+final maxConcurrentDelayTests = system.isIOS
+    ? _maxConcurrentDelayTestsIOS
+    : _maxConcurrentDelayTestsDefault;
+const moreDuration = Duration(milliseconds: 100);
 const animateDuration = Duration(milliseconds: 100);
 const midDuration = Duration(milliseconds: 200);
 const commonDuration = Duration(milliseconds: 300);
