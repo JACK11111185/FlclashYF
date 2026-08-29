@@ -38,6 +38,7 @@ type TunHandler struct {
 	mu sync.RWMutex
 }
 
+// start brings up the TUN listener and reports whether a data path exists.
 func (th *TunHandler) start(fd int, options t.Options) bool {
 	configMu.Lock()
 	defer configMu.Unlock()
@@ -206,6 +207,7 @@ func handleStopTun() {
 	stopTunLocked()
 }
 
+<<<<<<< HEAD
 func stopTunLocked() {
 	if tunHandler == nil {
 		return
@@ -223,10 +225,21 @@ func handleStartTun(callback unsafe.Pointer, fd int, options t.Options) bool {
 			releaseObject(callback)
 		}
 		logError("startTun was handed no tun descriptor")
+=======
+// handleStartTun reports whether the TUN data path is live. A false result means
+// the caller must not treat the tunnel as usable.
+func handleStartTun(callback unsafe.Pointer, fd int, options t.Options) bool {
+	handleStopTun()
+	tunLock.Lock()
+	defer tunLock.Unlock()
+	if fd == 0 {
+		log.Errorln("TUN: refusing to start with fd=0")
+>>>>>>> e4380fe2 (fix(ios): report the real TUN start result and unblock the data path)
 		return false
 	}
 	tunHandler = &TunHandler{
 		callback: callback,
+<<<<<<< HEAD
 	}
 	if tunHandler.start(fd, options) {
 		return true
@@ -236,6 +249,11 @@ func handleStartTun(callback unsafe.Pointer, fd int, options t.Options) bool {
 	// the VPN down rather than leave the device pointed at a black hole.
 	tunHandler = nil
 	return false
+=======
+		limit:    semaphore.NewWeighted(4),
+	}
+	return tunHandler.start(fd, options)
+>>>>>>> e4380fe2 (fix(ios): report the real TUN start result and unblock the data path)
 }
 
 func (response MethodResponse) send() {
@@ -291,15 +309,25 @@ func startTUN(callback unsafe.Pointer, fd C.int, optionsChar *C.char) bool {
 		return false
 	}
 	started := handleStartTun(callback, int(fd), options)
+<<<<<<< HEAD
 	if !started {
 		return false
 	}
 	if !isRunning.Load() {
+=======
+	// The listener/connection steps run exactly as before even on failure: they
+	// own the mixed-port inbound the iOS proxy settings and checkIp depend on,
+	// and the caller rolls the whole start back when `started` is false.
+	if !isRunning {
+>>>>>>> e4380fe2 (fix(ios): report the real TUN start result and unblock the data path)
 		handleStartListener()
 	} else {
 		handleResetConnections()
 	}
-	return true
+	if !started {
+		log.Errorln("TUN: data path unavailable; reporting start failure")
+	}
+	return started
 }
 
 //export quickSetup
