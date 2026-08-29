@@ -85,6 +85,10 @@ const configKey = 'config';
 const systemDnsRecordKey = 'system_dns_record';
 const bootRecordKey = 'boot_record';
 const defaultSystemDnsFallback = '223.5.5.5';
+
+/// Survives app relaunches so a foreground return can tell whether the
+/// long-lived core already runs the config the app is about to apply.
+const appliedConfigMd5Key = 'applied_config_md5';
 const double dialogCommonWidth = 300;
 const repository = 'chenx-dust/FlClash-Patched';
 const maxMobileWidth = 600;

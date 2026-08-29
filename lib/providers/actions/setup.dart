@@ -167,6 +167,14 @@ class SetupAction extends _$SetupAction {
     if (!_isCurrent(request)) {
       return true;
     }
+    // The iOS core lives in the Network Extension, so stopping the tunnel tears
+    // down the process holding the config. Forget the applied fingerprint or
+    // the next start would skip the push and leave the fresh extension with no
+    // config at all.
+    if (system.isIOS) {
+      globalState.lastConfigMd5 = null;
+      await preferences.setAppliedConfigMd5(null);
+    }
     resetCoreTraffic();
     ref.read(trafficsProvider.notifier).clear();
     ref.read(totalTrafficProvider.notifier).value = const Traffic();
@@ -503,7 +511,22 @@ class SetupAction extends _$SetupAction {
     final profileFailed = realProfile == null;
     final yamlString = realProfile?.yaml ?? '';
     final yamlMd5 = realProfile?.md5 ?? '';
-    if (!profileFailed && yamlMd5 == globalState.lastConfigMd5 && !force) {
+    // On iOS the Network Extension may outlive Flutter. Persisted YAML identity
+    // lets a foreground return avoid rebuilding the Core when it already has the
+    // exact configuration, while a content check protects against a fresh
+    // extension that must reload the profile.
+    final appliedMd5 = globalState.lastConfigMd5 ??
+        await preferences.getAppliedConfigMd5();
+    final configFile = File(await appPath.configFilePath);
+    final diskMatches = await configFile.exists() &&
+        (await configFile.readAsString()).toMd5() == yamlMd5;
+    final matchesAppliedConfig = !profileFailed &&
+        yamlMd5 == appliedMd5 &&
+        diskMatches;
+    final skipRedundantReload = matchesAppliedConfig &&
+        (!force || (system.isIOS && _isRunning));
+    if (skipRedundantReload) {
+      globalState.lastConfigMd5 = yamlMd5;
       await preloadInvoke?.call();
       await onUpdated?.call();
       return _SetupTaskResult.completed;
@@ -540,6 +563,7 @@ class SetupAction extends _$SetupAction {
           rethrow;
         }
         globalState.lastConfigMd5 = yamlMd5;
+        await preferences.setAppliedConfigMd5(yamlMd5);
         ref.read(checkIpNumProvider.notifier).add();
         if (_profileEpoch.accepts(
           epoch: setupEpoch,
