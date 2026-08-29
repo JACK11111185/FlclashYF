@@ -7,6 +7,7 @@ final class SharedStateStore {
   private let profileEpochKey = "profileEpoch"
   private let appliedProfileEpochKey = "appliedProfileEpoch"
   private let eventQueueDirectoryName = "core-events"
+  private let snapshotFileName = "shared-state.json"
 
   private var lastProfileID: Int?
   private var profileChanged = false
@@ -48,6 +49,7 @@ final class SharedStateStore {
     }
     userDefaults.set(stateData, forKey: sharedStateKey)
     userDefaults.synchronize()
+    commitSharedStateSnapshot(stateData)
     return true
   }
 
@@ -55,6 +57,25 @@ final class SharedStateStore {
     let changed = profileChanged
     profileChanged = false
     return changed
+  }
+
+  /// Committed copy of the exact shared-state payload. The extension reads this
+  /// when the App Group suite returns nothing for its own launch.
+  @discardableResult
+  func commitSharedStateSnapshot(_ data: Data) -> Bool {
+    guard let url = sharedStateSnapshotURL() else {
+      return false
+    }
+    do {
+      try data.write(to: url, options: .atomic)
+      try? (url as NSURL).setResourceValue(
+        URLFileProtection.completeUntilFirstUserAuthentication,
+        forKey: .fileProtectionKey
+      )
+      return true
+    } catch {
+      return false
+    }
   }
 
   func profileEpoch() -> UInt64 {
@@ -107,6 +128,10 @@ final class SharedStateStore {
     FileManager.default.containerURL(
       forSecurityApplicationGroupIdentifier: appGroupIdentifier
     )
+  }
+
+  func sharedStateSnapshotURL() -> URL? {
+    appGroupDirectory()?.appendingPathComponent(snapshotFileName)
   }
 
   func eventQueueDirectory() -> URL? {
