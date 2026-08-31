@@ -82,9 +82,9 @@ class ProxiesAction extends _$ProxiesAction {
   }
 
   Future<void> updateGroups() async {
+    final profileId = ref.read(currentProfileProvider)?.id;
     try {
       commonPrint.log('updateGroups');
-      final profileId = ref.read(currentProfileProvider)?.id;
       final groups = await retry<List<Group>>(
         task: () async {
           final sortType = ref.read(
@@ -114,6 +114,15 @@ class ProxiesAction extends _$ProxiesAction {
         },
         retryIf: (res) => res.isEmpty,
       );
+      // A genuinely empty result (profile really has no proxy groups) is only
+      // trusted when the profile did not change under us; otherwise keep what
+      // we have. This prevents a transient empty read from blanking the group
+      // list, which used to make the whole proxies tab disappear even though
+      // the tunnel kept working (data was never lost — only the UI went empty).
+      if (groups.isEmpty && ref.read(groupsProvider).isNotEmpty) {
+        commonPrint.log('updateGroups: ignoring transient empty result');
+        return;
+      }
       ref.read(groupsProvider.notifier).value = groups;
       if (groups.isNotEmpty) {
         _removeUnavailableSelections(profileId: profileId, groups: groups);
