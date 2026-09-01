@@ -528,6 +528,8 @@ class SetupAction extends _$SetupAction {
     if (skipRedundantReload) {
       globalState.lastConfigMd5 = yamlMd5;
       await preloadInvoke?.call();
+      // Groups are in-memory UI state; reload them even when the Core config is
+      // already current after a foreground return.
       await onUpdated?.call();
       return _SetupTaskResult.completed;
     }
