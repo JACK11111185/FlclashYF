@@ -65,10 +65,10 @@ class Service {
     return CoreMethodResponse.fromJson(dataJson);
   }
 
-  Future<bool> start(SharedState state) async {
+  Future<bool> start(SharedState state, {int? profileId}) async {
     return await methodChannel.invokeMethod<bool>(
           'start',
-          json.encode(state),
+          _encodeSharedState(state, profileId),
         ) ??
         false;
   }
@@ -81,12 +81,18 @@ class Service {
     return await methodChannel.invokeMethod<String>('init') ?? '';
   }
 
-  Future<String> syncState(SharedState state) async {
+  Future<String> syncState(SharedState state, {int? profileId}) async {
     return await methodChannel.invokeMethod<String>(
           'syncState',
-          json.encode(state),
+          _encodeSharedState(state, profileId),
         ) ??
         '';
+  }
+
+  String _encodeSharedState(SharedState state, int? profileId) {
+    final payload = state.toJson();
+    payload['currentProfileId'] = profileId;
+    return json.encode(payload);
   }
 
   Future<bool> shutdown() async {

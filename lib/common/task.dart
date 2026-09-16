@@ -319,6 +319,28 @@ Future<({String yaml, String md5})> _makeRealProfileTask(
     rawConfig['proxy-groups'] = data.proxyGroups;
   }
   rawConfig['rules'] = rules;
+  if (data.routeGroups.isNotEmpty ||
+      data.routeRules.isNotEmpty ||
+      data.routeRuleProviders.isNotEmpty) {
+    final routeConfig = mergeAdditiveRouteConfig(
+      Map<String, dynamic>.from(rawConfig),
+      groups: data.routeGroups.map((group) {
+        final value = Map<String, dynamic>.from(group.toJson())
+          ..remove('id')
+          ..remove('profileId')
+          ..remove('order')
+          ..remove('route-managed');
+        value.removeWhere((_, item) => item == null);
+        return value;
+      }).toList(),
+      rules: data.routeRules.map((rule) => rule.rawValue).toList(),
+      ruleProviders: data.routeRuleProviders,
+    );
+    rawConfig
+      ..clear()
+      ..addAll(routeConfig);
+    confineProviders('rule-providers', rulesProviderDirectoryName);
+  }
   final yaml = await _encodeYaml(Map<String, dynamic>.from(rawConfig));
   return (yaml: yaml, md5: yaml.toMd5());
 }

@@ -10,6 +10,7 @@ extension PageLabelL10n on PageLabel {
       PageLabel.dashboard => appLocalizations.dashboard,
       PageLabel.proxies => appLocalizations.proxies,
       PageLabel.profiles => appLocalizations.profiles,
+      PageLabel.route => appLocalizations.route,
       PageLabel.tools => appLocalizations.tools,
       PageLabel.logs => appLocalizations.logs,
       PageLabel.requests => appLocalizations.requests,
@@ -30,6 +31,7 @@ extension PageLabelL10n on PageLabel {
       PageLabel.dashboard ||
       PageLabel.proxies ||
       PageLabel.profiles ||
+      PageLabel.route ||
       PageLabel.tools => null,
     };
   }

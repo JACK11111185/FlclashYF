@@ -19,6 +19,31 @@ private enum ConfigurationCoreMethod: String {
   case updateConfig
 }
 
+private enum RuntimeStateCoreMethod: String {
+  case getProxies
+  case changeProxy
+  case getTraffic
+  case getTotalTraffic
+  case resetTraffic
+  case asyncTestDelay
+  case getConnections
+  case closeConnections
+  case resetConnections
+  case closeConnection
+  case getExternalProviders
+  case getExternalProvider
+  case getOverlayNetworkStatus
+  case activateOverlayNetwork
+  case pingTailscaleNode
+  case logoutTailscale
+  case updateExternalProvider
+  case sideLoadExternalProvider
+  case getMemory
+  case getGoroutineCount
+  case clearEffect
+  case updateDns
+}
+
 private struct CoreRoutingError: LocalizedError {
   let code: String
   let message: String
@@ -67,6 +92,16 @@ final class CoreMessageRouter {
 
     let selectedRoute = currentRoute
     let networkExtensionActive = selectedRoute == .networkExtension
+    if networkExtensionActive,
+      method.flatMap(RuntimeStateCoreMethod.init(rawValue:)) != nil,
+      !tunnelController.isCurrentProfileApplied()
+    {
+      return methodErrorResponse(
+        data: data,
+        code: "profile_switching",
+        message: "profile switch is still applying"
+      )
+    }
 
     do {
       if case .stop(let kind) = action {
@@ -91,12 +126,18 @@ final class CoreMessageRouter {
           networkExtensionActive ? .networkExtension : .app
         )
       } else {
+        let selectedMethodRoute = route(
+          method: method,
+          defaultRoute: selectedRoute
+        )
+        let allowFallback = !(
+          selectedMethodRoute == .networkExtension &&
+            method.flatMap(RuntimeStateCoreMethod.init(rawValue:)) != nil
+        )
         routedResult = try await sendRoutedCoreMessage(
           data,
-          selectedRoute: route(
-            method: method,
-            defaultRoute: selectedRoute
-          )
+          selectedRoute: selectedMethodRoute,
+          allowFallback: allowFallback
         )
       }
       if case .start(let kind) = action,
@@ -152,13 +193,14 @@ final class CoreMessageRouter {
 
   private func sendRoutedCoreMessage(
     _ data: Data,
-    selectedRoute: CoreRoute
+    selectedRoute: CoreRoute,
+    allowFallback: Bool = true
   ) async throws -> (response: String, route: CoreRoute) {
     do {
       let response = try await sendCoreMessage(data, route: selectedRoute)
       return (response, selectedRoute)
     } catch {
-      guard selectedRoute == .networkExtension else {
+      guard allowFallback, selectedRoute == .networkExtension else {
         throw error
       }
       log(
@@ -252,10 +294,14 @@ final class CoreMessageRouter {
         with: false
       )
       : data
-    return try await sendCoreMessage(
+    let networkExtensionResponse = try await sendCoreMessage(
       networkExtensionData,
       route: .networkExtension
     )
+    if methodResponseHasEmptyStringResult(networkExtensionResponse) {
+      tunnelController.didApplyCurrentProfile()
+    }
+    return networkExtensionResponse
   }
 
   private func sendCoreMessage(

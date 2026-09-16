@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -17,6 +18,38 @@ import '../helpers/test_app.dart';
 class _MockCoreHandlerInterface extends Mock implements CoreHandlerInterface {}
 
 void main() {
+  testWidgets('shows application and Core memory as separate values', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(900, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpWidget(
+      TestApp(
+        wrapInProviderScope: true,
+        homeBuilder: _scaffoldBody,
+        child: MemoryInfo(
+          memoryReader: () async => 52 * 1024 * 1024,
+          appMemoryReader: () => 78 * 1024 * 1024,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(currentAppLocalizations.application), findsOne);
+    expect(find.text(currentAppLocalizations.core), findsOne);
+    expect(find.textContaining('78'), findsOne);
+    expect(find.textContaining('52'), findsOne);
+    expect(tester.getSize(find.byType(MemoryInfo)).height, getWidgetHeight(1));
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('MemoryInfo refreshes only while the app is resumed', (
     tester,
   ) async {

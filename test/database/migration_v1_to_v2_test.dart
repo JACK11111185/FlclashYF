@@ -61,6 +61,36 @@ int _userVersion(Database raw) =>
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('v4 upgrade adds route persistence columns and provider table', () async {
+    final raw = sqlite3.openInMemory();
+    addTearDown(raw.close);
+    final seed = fl.Database(
+      NativeDatabase.opened(raw, closeUnderlyingOnClose: false),
+    );
+    await seed.customSelect('SELECT 1').get();
+    await seed.close();
+    raw.execute(
+      "INSERT INTO proxy_groups (id, name, type) VALUES (1, 'Custom', 'select')",
+    );
+    raw.execute('PRAGMA user_version = 4');
+
+    final database = fl.Database(
+      NativeDatabase.opened(raw, closeUnderlyingOnClose: false),
+    );
+    addTearDown(database.close);
+    await database.customSelect('SELECT 1').get();
+
+    expect(_columnsOf(raw, 'proxy_groups'), contains('route_managed'));
+    expect(_hasTable(raw, 'route_rule_providers'), isTrue);
+    expect(
+      raw
+          .select('SELECT route_managed FROM proxy_groups WHERE id = 1')
+          .single['route_managed'],
+      0,
+    );
+    expect(_userVersion(raw), 5);
+  });
+
   late Database raw;
 
   setUp(() async {
@@ -89,7 +119,7 @@ void main() {
 
     await openAndMigrate();
 
-    expect(_userVersion(raw), 4);
+    expect(_userVersion(raw), 5);
   });
 
   test('the v2 upgrade adds both profile columns', () async {
@@ -101,7 +131,7 @@ void main() {
 
     expect(_columnsOf(raw, 'profiles'), contains('match_target'));
     expect(_columnsOf(raw, 'profiles'), contains('age_secret_key'));
-    expect(_userVersion(raw), 4);
+    expect(_userVersion(raw), 5);
   });
 
   test('the upstream v3 upgrade adds age_secret_key to profiles', () async {
@@ -111,7 +141,7 @@ void main() {
     await openAndMigrate();
 
     expect(_columnsOf(raw, 'profiles'), contains('age_secret_key'));
-    expect(_userVersion(raw), 4);
+    expect(_userVersion(raw), 5);
   });
 
   test('the fork v3 upgrade adds match_target and keeps age data', () async {
@@ -141,7 +171,7 @@ void main() {
           .single['age_secret_key'],
       'AGE-SECRET-KEY-test',
     );
-    expect(_userVersion(raw), 4);
+    expect(_userVersion(raw), 5);
   });
 
   test(
@@ -153,7 +183,7 @@ void main() {
       await openAndMigrate();
 
       expect(_columnsOf(raw, 'profiles'), contains('match_target'));
-      expect(_userVersion(raw), 4);
+      expect(_userVersion(raw), 5);
     },
   );
 
@@ -228,7 +258,7 @@ void main() {
 
     final database = await openAndMigrate();
 
-    expect(_userVersion(raw), 4);
+    expect(_userVersion(raw), 5);
     expect(await database.customSelect('SELECT * FROM rules').get(), isEmpty);
   });
 
@@ -240,7 +270,7 @@ void main() {
       await openAndMigrate();
 
       expect(_columnsOf(raw, 'rules'), before);
-      expect(_userVersion(raw), 4);
+      expect(_userVersion(raw), 5);
       expect(_hasTable(raw, 'proxy_groups'), isTrue);
     },
   );

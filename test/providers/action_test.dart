@@ -6,6 +6,7 @@ import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
@@ -13,6 +14,8 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
+import 'package:fl_clash/state.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -62,11 +65,36 @@ void main() {
       expect(await action.loadProfileTemplate(), contains('mode: rule'));
     });
 
+    test('passes the edited name through inline clipboard imports', () async {
+      final core = _MockCoreHandlerInterface();
+      when(() => core.convertUriSubscription(any())).thenAnswer(
+        (_) async => [
+          {'name': 'URL fixture', 'type': 'direct'},
+        ],
+      );
+      when(() => core.validateConfig(any())).thenAnswer((_) async => '');
+      final container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          profilesProvider.overrideWith(() => TestProfiles()),
+        ],
+      );
+      addTearDown(container.dispose);
+      globalState.container = container;
+      final action = container.read(profilesActionProvider.notifier);
+
+      await AppLocalizations.load(const Locale('en'));
+      await action.addProfileFromClipboardContent(
+        'ss://example.com',
+        'Edited URL name',
+      );
+
+      expect(container.read(profilesProvider).single.label, 'Edited URL name');
+    });
+
     test('uses a saved template for URI subscriptions', () async {
       final core = _MockCoreHandlerInterface();
-      when(
-        () => core.validateConfigWithData(any()),
-      ).thenAnswer((_) async => '');
+      when(() => core.validateConfig(any())).thenAnswer((_) async => '');
       when(() => core.convertUriSubscription(any())).thenAnswer(
         (_) async => [
           {'name': 'URI fixture', 'type': 'direct'},
@@ -86,15 +114,13 @@ void main() {
 
       final prepared = await action.prepareProfileConfig('ss://fixture', null);
 
-      expect(prepared, contains('custom-marker: uri'));
+      expect(prepared, contains('custom-marker: "uri"'));
       expect(prepared, contains('name: "URI fixture"'));
     });
 
     test('uses a saved template for proxies-only YAML', () async {
       final core = _MockCoreHandlerInterface();
-      when(
-        () => core.validateConfigWithData(any()),
-      ).thenAnswer((_) async => '');
+      when(() => core.validateConfig(any())).thenAnswer((_) async => '');
       final container = ProviderContainer(
         overrides: [
           coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
@@ -112,13 +138,13 @@ void main() {
         null,
       );
 
-      expect(prepared, contains('custom-marker: yaml'));
+      expect(prepared, contains('custom-marker: "yaml"'));
       expect(prepared, contains('name: "YAML fixture"'));
     });
 
     test('invalid save preserves the effective template', () async {
       final core = _MockCoreHandlerInterface();
-      when(() => core.validateConfigWithData(any())).thenAnswer(
+      when(() => core.validateConfig(any())).thenAnswer(
         (invocation) async =>
             invocation.positionalArguments.first == 'mode: invalid\n'
             ? 'invalid template'

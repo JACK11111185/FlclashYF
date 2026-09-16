@@ -164,6 +164,9 @@ final class ServiceChannel {
       log("saveSharedState failed")
       return false
     }
+    if sharedStateStore.consumeProfileChange() {
+      tunnelController.profileDidChange()
+    }
     log("saveSharedState bytes=\(data.count)")
     return true
   }

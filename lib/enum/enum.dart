@@ -362,6 +362,7 @@ enum PageLabel {
   dashboard,
   proxies,
   profiles,
+  route,
   tools,
   logs,
   requests,
@@ -528,7 +529,7 @@ enum CoreStatus { connecting, connected, disconnected }
 
 enum UpdatingScope { core, local }
 
-enum RuleScene { added, disabled, custom }
+enum RuleScene { added, disabled, custom, route }
 
 enum ItemPosition {
   start,

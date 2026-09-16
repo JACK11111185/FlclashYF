@@ -59,6 +59,7 @@ Map<String, Object?> _normalizeConfigJson(Map<String, Object?> json) {
 
 const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.networkSpeed,
+  DashboardWidget.memoryInfo,
   DashboardWidget.systemProxyButton,
   DashboardWidget.tunButton,
   DashboardWidget.outboundMode,

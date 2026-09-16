@@ -245,6 +245,85 @@ void main() {
     },
   );
 
+  test('makeRealProfileTask additively applies Route data', () async {
+    final rawConfig = await decodeJSONTask<Map<String, dynamic>>(
+      await encodeJSONTask({
+        'proxies': [
+          {'name': 'Node', 'type': 'direct'},
+        ],
+        'proxy-groups': [
+          {
+            'name': 'Subscription',
+            'type': 'select',
+            'proxies': ['Node'],
+          },
+        ],
+        'rule-providers': {
+          'existing': {'type': 'file', 'path': './existing.yaml'},
+        },
+        'rules': ['MATCH,Subscription'],
+      }),
+    );
+
+    final result = await makeRealProfileTask(
+      MakeRealProfileState(
+        profilesPath: '/profiles',
+        profileId: 7,
+        rawConfig: rawConfig,
+        realPatchConfig: const PatchClashConfig(),
+        overrideDns: false,
+        appendSystemDns: false,
+        proxyGroups: const [],
+        rules: const [],
+        addedRules: const [],
+        routeGroups: const [
+          ProxyGroup(
+            id: 9,
+            name: 'Route',
+            type: GroupType.URLTest,
+            proxies: ['Node', 'Subscription'],
+            url: 'https://example.com/generate_204',
+            interval: 300,
+            routeManaged: true,
+          ),
+        ],
+        routeRules: const [
+          Rule(
+            ruleAction: RuleAction.DOMAIN_SUFFIX,
+            content: 'example.com',
+            ruleTarget: 'Route',
+          ),
+        ],
+        routeRuleProviders: const {
+          'remote': {
+            'type': 'http',
+            'url': 'https://example.com/rules.yaml',
+            'behavior': 'domain',
+            'format': 'yaml',
+            'interval': 86400,
+          },
+        },
+        defaultUA: 'FlClash-Test',
+      ),
+    );
+    final config = loadYaml(result.yaml) as YamlMap;
+
+    expect(config['proxy-groups'].map((group) => group['name']), [
+      'Subscription',
+      'Route',
+    ]);
+    expect(config['proxy-groups'][1].containsKey('route-managed'), isFalse);
+    expect(config['rules'], [
+      'DOMAIN-SUFFIX,example.com,Route',
+      'MATCH,Subscription',
+    ]);
+    expect(config['rule-providers'].keys, containsAll(['existing', 'remote']));
+    expect(
+      config['rule-providers']['remote']['path'],
+      startsWith(join('/profiles', 'providers', '7', 'rules')),
+    );
+  });
+
   test(
     'makeRealProfileTask routes MATCH placeholders to matchTarget',
     () async {

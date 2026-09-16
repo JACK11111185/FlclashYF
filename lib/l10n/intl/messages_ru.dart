@@ -484,6 +484,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Скорость скачивания",
     ),
     "downloadTraffic": MessageLookupByLibrary.simpleMessage("Входящий трафик"),
+    "dropExactlyOneProfile": MessageLookupByLibrary.simpleMessage(
+      "Перетащите ровно один файл профиля",
+    ),
+    "droppedItemNotFile": MessageLookupByLibrary.simpleMessage(
+      "Перетащенный объект не является файлом",
+    ),
     "easyTierConnectionLatency": MessageLookupByLibrary.simpleMessage(
       "Задержка соединения",
     ),
@@ -635,6 +641,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "fileDesc": MessageLookupByLibrary.simpleMessage(
       "Загрузить файл профиля напрямую",
     ),
+    "fileImport": MessageLookupByLibrary.simpleMessage("Импорт файла"),
     "fileIsUpdate": MessageLookupByLibrary.simpleMessage(
       "Файл изменён. Сохранить изменения?",
     ),
@@ -768,9 +775,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Введите содержимое правила",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),
@@ -1056,12 +1064,29 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage("Введите корректный интервал"),
     "profileAutoUpdateIntervalNullValidationDesc":
         MessageLookupByLibrary.simpleMessage("Введите интервал автообновления"),
+    "profileFileInvalidUtf8": MessageLookupByLibrary.simpleMessage(
+      "Файл профиля содержит недопустимый UTF-8",
+    ),
+    "profileFileTooLarge": MessageLookupByLibrary.simpleMessage(
+      "Файл профиля слишком большой",
+    ),
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "Профиль изменён. Отключить автообновление?",
     ),
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите название профиля",
     ),
+    "profileTemplate": MessageLookupByLibrary.simpleMessage("Шаблон профиля"),
+    "profileTemplateDesc": MessageLookupByLibrary.simpleMessage(
+      "Изменить шаблон для импорта ссылок прокси",
+    ),
+    "profileTemplateResetConfirm": MessageLookupByLibrary.simpleMessage(
+      "Восстановить встроенный шаблон профиля?",
+    ),
+    "profileTemplateSaved": MessageLookupByLibrary.simpleMessage(
+      "Шаблон профиля сохранён",
+    ),
+    "profileTemplateYaml": MessageLookupByLibrary.simpleMessage("YAML шаблона"),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Введите корректный URL профиля",
     ),
@@ -1181,6 +1206,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "restoreAllData": MessageLookupByLibrary.simpleMessage(
       "Восстановить все данные",
     ),
+    "restoreDefault": MessageLookupByLibrary.simpleMessage(
+      "Восстановить по умолчанию",
+    ),
     "restoreException": MessageLookupByLibrary.simpleMessage(
       "Ошибка восстановления",
     ),
@@ -1209,10 +1237,20 @@ class MessageLookup extends MessageLookupByLibrary {
       "Восстановление выполнено",
     ),
     "role": MessageLookupByLibrary.simpleMessage("Роль"),
+    "route": MessageLookupByLibrary.simpleMessage("Маршруты"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Адреса маршрутов"),
     "routeAddressDesc": MessageLookupByLibrary.simpleMessage(
       "Настроить прослушиваемые адреса маршрутов",
     ),
+    "routeGroupType": MessageLookupByLibrary.simpleMessage("Тип группы"),
+    "routeGroups": MessageLookupByLibrary.simpleMessage("Группы маршрутизации"),
+    "routeInputHint": MessageLookupByLibrary.simpleMessage(
+      "Домен, IP, CIDR или URL набора правил",
+    ),
+    "routeInvalidInput": MessageLookupByLibrary.simpleMessage(
+      "Введите допустимый домен, IP, CIDR или URL HTTP(S)",
+    ),
+    "routeMembers": MessageLookupByLibrary.simpleMessage("Узлы и группы"),
     "routeMode": MessageLookupByLibrary.simpleMessage("Режим маршрутизации"),
     "routeModeBypassPrivate": MessageLookupByLibrary.simpleMessage(
       "Обходить частные адреса",
@@ -1220,6 +1258,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeModeConfig": MessageLookupByLibrary.simpleMessage(
       "Использовать конфигурацию",
     ),
+    "routeNoProfile": MessageLookupByLibrary.simpleMessage(
+      "Выберите профиль для настройки маршрутизации",
+    ),
+    "routeProviders": MessageLookupByLibrary.simpleMessage("Провайдеры правил"),
+    "routeRules": MessageLookupByLibrary.simpleMessage("Правила маршрутизации"),
+    "routeTarget": MessageLookupByLibrary.simpleMessage("Назначение"),
     "routes": MessageLookupByLibrary.simpleMessage("Маршруты"),
     "ru": MessageLookupByLibrary.simpleMessage("Русский"),
     "rule": MessageLookupByLibrary.simpleMessage("Правило"),
@@ -1572,6 +1616,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "unmaximize": MessageLookupByLibrary.simpleMessage("Свернуть в окно"),
     "unnamed": MessageLookupByLibrary.simpleMessage("Без названия"),
     "unpinWindow": MessageLookupByLibrary.simpleMessage("Открепить окно"),
+    "unsupportedProfileFileType": MessageLookupByLibrary.simpleMessage(
+      "Неподдерживаемый формат файла профиля",
+    ),
     "update": MessageLookupByLibrary.simpleMessage("Обновить"),
     "upload": MessageLookupByLibrary.simpleMessage("Отдача"),
     "uploadSpeed": MessageLookupByLibrary.simpleMessage("Скорость загрузки"),

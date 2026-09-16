@@ -31,6 +31,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
   )
 
   private var suspendSupport = true
+  private var profileEpoch: UInt64?
 
   override func startTunnel(
     options: [String: NSObject]?,
@@ -45,6 +46,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       completionHandler(PacketTunnelProviderError.missingVPNOptions)
       return
     }
+    profileEpoch = sharedStateStore.profileEpoch()
     logger.info(
       "startTunnel options stack=\(vpnOptions.stack, privacy: .public) ipv6=\(vpnOptions.ipv6, privacy: .public) captureDns=\(vpnOptions.captureDns, privacy: .public) systemProxy=\(vpnOptions.systemProxy, privacy: .public) suspendSupport=\(vpnOptions.suspendSupport, privacy: .public)"
     )
@@ -120,6 +122,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
           "NECoreBridge.startTun result=\(started, privacy: .public)"
         )
         if started {
+          let epoch = self.sharedStateStore.profileEpoch()
+          self.sharedStateStore.markProfileEpochApplied(epoch)
+          self.profileEpoch = epoch
           self.sharedStateStore.saveRunTime()
         }
         completionHandler(
@@ -186,6 +191,23 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       logger.warning("handleAppMessage ignored: missing completion handler")
       return
     }
+    let method = methodName(messageData)
+    let isConfigurationMessage = method == "setupConfig" || method == "updateConfig"
+    if !isConfigurationMessage {
+      guard let epoch = profileEpoch,
+        sharedStateStore.isCurrentProfileEpoch(epoch)
+      else {
+        logger.warning("handleAppMessage rejected stale profile epoch")
+        completionHandler(
+          methodErrorResponse(
+            messageData: messageData,
+            code: "stale_profile",
+            message: "network extension profile is stale"
+          )
+        )
+        return
+      }
+    }
 
     NECoreBridge.invokeMethod(messageData) { response in
       guard let response else {
@@ -198,6 +220,13 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
           )
         )
         return
+      }
+      if isConfigurationMessage,
+        self.methodSucceeded(response)
+      {
+        let epoch = self.sharedStateStore.profileEpoch()
+        self.sharedStateStore.markProfileEpochApplied(epoch)
+        self.profileEpoch = epoch
       }
       self.logger.debug(
         "handleAppMessage response bytes=\(response.count, privacy: .public)"
@@ -219,6 +248,24 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
       logger.info("wake: resuming tunnel")
       NECoreBridge.setSuspended(false)
     }
+  }
+
+  private func methodName(_ messageData: Data) -> String? {
+    guard let object = try? JSONSerialization.jsonObject(with: messageData)
+      as? [String: Any]
+    else {
+      return nil
+    }
+    return object["method"] as? String
+  }
+
+  private func methodSucceeded(_ response: Data) -> Bool {
+    guard let object = try? JSONSerialization.jsonObject(with: response)
+      as? [String: Any]
+    else {
+      return false
+    }
+    return object["error"] == nil || object["error"] is NSNull
   }
 
   private func methodErrorResponse(

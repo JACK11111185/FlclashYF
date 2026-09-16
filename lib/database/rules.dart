@@ -46,6 +46,10 @@ class RulesDao extends DatabaseAccessor<Database> with _$RulesDaoMixin {
     return _query(profileId: profileId, scene: RuleScene.custom);
   }
 
+  Selectable<Rule> queryProfileRouteRules(int profileId) {
+    return _query(profileId: profileId, scene: RuleScene.route);
+  }
+
   Selectable<int> profileCustomRulesCount(int profileId) {
     final query = _getSelectStatement(
       profileId: profileId,
@@ -162,6 +166,10 @@ class RulesDao extends DatabaseAccessor<Database> with _$RulesDaoMixin {
     return _put(rule, profileId: profileId, scene: RuleScene.custom);
   }
 
+  Future<void> putProfileRouteRule(int profileId, Rule rule) {
+    return _put(rule, profileId: profileId, scene: RuleScene.route);
+  }
+
   Future<void> putProfileDisabledRule(int profileId, Rule rule) {
     return _put(rule, profileId: profileId, scene: RuleScene.disabled);
   }
@@ -220,6 +228,19 @@ class RulesDao extends DatabaseAccessor<Database> with _$RulesDaoMixin {
       order: order,
       profileId: profileId,
       scene: RuleScene.custom,
+    );
+  }
+
+  Future<int> orderProfileRouteRule(
+    int profileId, {
+    required int ruleId,
+    required String order,
+  }) async {
+    return _order(
+      ruleId: ruleId,
+      order: order,
+      profileId: profileId,
+      scene: RuleScene.route,
     );
   }
 

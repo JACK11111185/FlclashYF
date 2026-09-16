@@ -48,8 +48,30 @@ Future<SetupState> setupState(Ref ref, int? profileId) async {
   List<ProxyGroup> proxyGroups = [];
   List<Rule> rules = [];
   List<Rule> addedRules = [];
+  List<ProxyGroup> routeGroups = [];
+  List<Rule> routeRules = [];
+  Map<String, dynamic> routeRuleProviders = {};
   Script? script;
   if (profileId != null) {
+    routeGroups = await database.proxyGroupsDao
+        .queryRouteManaged(profileId)
+        .get();
+    routeRules = await database.rulesDao
+        .queryProfileRouteRules(profileId)
+        .get();
+    final providers = await database.routeRuleProvidersDao
+        .query(profileId)
+        .get();
+    routeRuleProviders = {
+      for (final provider in providers)
+        provider.name: {
+          'type': 'http',
+          'url': provider.url,
+          'behavior': provider.behavior,
+          'format': provider.format,
+          'interval': provider.interval,
+        },
+    };
     if (overwriteType == OverwriteType.standard) {
       addedRules = await database.rulesDao.queryAddedRules(profileId).get();
     } else if (overwriteType == OverwriteType.script) {
@@ -68,6 +90,9 @@ Future<SetupState> setupState(Ref ref, int? profileId) async {
     profileLastUpdateDate: profileLastUpdateDate,
     overwriteType: overwriteType,
     addedRules: addedRules,
+    routeGroups: routeGroups,
+    routeRules: routeRules,
+    routeRuleProviders: routeRuleProviders,
     script: script,
     overrideDns: overrideDns,
     dns: dns,

@@ -16,6 +16,7 @@ part 'groups.dart';
 part 'icons.dart';
 part 'links.dart';
 part 'profiles.dart';
+part 'route_rule_providers.dart';
 part 'rules.dart';
 part 'scripts.dart';
 
@@ -27,14 +28,22 @@ part 'scripts.dart';
     ProfileRuleLinks,
     ProxyGroups,
     IconRecords,
+    RouteRuleProviders,
   ],
-  daos: [ProfilesDao, ScriptsDao, RulesDao, ProxyGroupsDao, IconRecordsDao],
+  daos: [
+    ProfilesDao,
+    ScriptsDao,
+    RulesDao,
+    ProxyGroupsDao,
+    IconRecordsDao,
+    RouteRuleProvidersDao,
+  ],
 )
 class Database extends _$Database {
   Database([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -56,8 +65,21 @@ class Database extends _$Database {
         if (from < 4) {
           await _migrateProfileColumns(m);
         }
+        if (from < 5) {
+          await _migrateRoutePersistence(m);
+        }
       },
     );
+  }
+
+  Future<void> _migrateRoutePersistence(Migrator m) async {
+    final columns = await customSelect('PRAGMA table_info(proxy_groups)').get();
+    if (!columns
+        .map((row) => row.read<String>('name'))
+        .contains('route_managed')) {
+      await m.addColumn(proxyGroups, proxyGroups.routeManaged);
+    }
+    await m.createTable(routeRuleProviders);
   }
 
   Future<void> _migrateProfileColumns(Migrator m) async {

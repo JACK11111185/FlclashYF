@@ -60,6 +60,7 @@ class CoreLib extends CoreHandlerInterface {
     final syncError =
         await _service?.syncState(
           globalState.container.read(sharedStateProvider),
+          profileId: globalState.container.read(currentProfileIdProvider),
         ) ??
         '';
     if (syncError.isNotEmpty) {
@@ -121,6 +122,7 @@ class CoreLib extends CoreHandlerInterface {
     final serviceStarted =
         await _service?.start(
           globalState.container.read(sharedStateProvider),
+          profileId: globalState.container.read(currentProfileIdProvider),
         ) ??
         false;
     return listenerStarted && serviceStarted;

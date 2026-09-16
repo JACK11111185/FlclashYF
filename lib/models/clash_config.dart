@@ -132,6 +132,7 @@ abstract class ProxyGroup with _$ProxyGroup {
     @JsonKey(name: 'include-all') bool? includeAll,
     @JsonKey(name: 'include-all-proxies') bool? includeAllProxies,
     @JsonKey(name: 'include-all-providers') bool? includeAllProviders,
+    @JsonKey(name: 'route-managed') @Default(false) bool routeManaged,
     bool? hidden,
     String? icon,
     String? order,

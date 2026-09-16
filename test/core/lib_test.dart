@@ -33,7 +33,7 @@ class _FakeService implements Service {
   }
 
   @override
-  Future<String> syncState(SharedState state) async {
+  Future<String> syncState(SharedState state, {int? profileId}) async {
     calls.add('syncState');
     return syncError;
   }
@@ -45,7 +45,7 @@ class _FakeService implements Service {
   }
 
   @override
-  Future<bool> start(SharedState state) async {
+  Future<bool> start(SharedState state, {int? profileId}) async {
     calls.add('start');
     return startResult;
   }

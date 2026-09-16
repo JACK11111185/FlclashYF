@@ -17,6 +17,8 @@ final class PacketTunnelSharedStateStore {
   private let sharedStateKey = "sharedState"
   private let setupParamsKey = "setupParams"
   private let runTimeKey = "runTime"
+  private let profileEpochKey = "profileEpoch"
+  private let appliedProfileEpochKey = "appliedProfileEpoch"
 
   func loadVPNOptions() -> PacketTunnelVPNOptions? {
     guard let data = userDefaults?.data(forKey: sharedStateKey),
@@ -49,6 +51,18 @@ final class PacketTunnelSharedStateStore {
     }
     userDefaults.set(data, forKey: setupParamsKey)
     return data
+  }
+
+  func profileEpoch() -> UInt64 {
+    UInt64(userDefaults?.integer(forKey: profileEpochKey) ?? 0)
+  }
+
+  func markProfileEpochApplied(_ epoch: UInt64) {
+    userDefaults?.set(epoch, forKey: appliedProfileEpochKey)
+  }
+
+  func isCurrentProfileEpoch(_ epoch: UInt64) -> Bool {
+    profileEpoch() == epoch
   }
 
   func makeInitParams() -> String {

@@ -1,16 +1,22 @@
+import 'dart:io';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/method.dart';
 import 'package:fl_clash/providers/core.dart';
-import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MemoryInfo extends ConsumerStatefulWidget {
-  final Future<num> Function()? memoryReader;
+  const MemoryInfo({
+    super.key,
+    @visibleForTesting this.memoryReader,
+    @visibleForTesting this.appMemoryReader,
+  });
 
-  const MemoryInfo({super.key, @visibleForTesting this.memoryReader});
+  final Future<num> Function()? memoryReader;
+  final num Function()? appMemoryReader;
 
   @override
   ConsumerState<MemoryInfo> createState() => _MemoryInfoState();
@@ -18,7 +24,8 @@ class MemoryInfo extends ConsumerStatefulWidget {
 
 class _MemoryInfoState extends ConsumerState<MemoryInfo>
     with WidgetsBindingObserver, ActivePollingMixin<MemoryInfo> {
-  final _memoryStateNotifier = ValueNotifier<num>(0);
+  final _coreMemory = ValueNotifier<num?>(null);
+  final _appMemory = ValueNotifier<num?>(null);
 
   CoreController get _core => ref.read(coreHandlerProvider);
 
@@ -27,24 +34,34 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
 
   @override
   void dispose() {
-    _memoryStateNotifier.dispose();
+    _coreMemory.dispose();
+    _appMemory.dispose();
     super.dispose();
   }
 
   @override
   Future<void> poll(PollGuard isCurrent) async {
-    final memory = await _readMemory();
-    if (memory == null || !isCurrent()) {
-      return;
+    final coreMemory = await _readCoreMemory();
+    if (!isCurrent()) return;
+    _appMemory.value = _readAppMemory();
+    if (coreMemory != null) {
+      _coreMemory.value = coreMemory;
     }
-    _memoryStateNotifier.value = memory;
   }
 
-  Future<num?> _readMemory() async {
+  num _readAppMemory() {
     try {
-      final memoryReader = widget.memoryReader;
-      return memoryReader != null
-          ? await memoryReader()
+      return widget.appMemoryReader?.call() ?? ProcessInfo.currentRss;
+    } catch (error) {
+      commonPrint.log('read app memory error: $error');
+      return 0;
+    }
+  }
+
+  Future<num?> _readCoreMemory() async {
+    try {
+      return widget.memoryReader != null
+          ? await widget.memoryReader!()
           : await _core.getMemory();
     } catch (error) {
       commonPrint.log(
@@ -55,51 +72,61 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
     }
   }
 
+  Widget _value(BuildContext context, String label, num? bytes) {
+    final traffic = bytes?.traffic;
+    final text = traffic == null ? '—' : '${traffic.value}${traffic.unit}';
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.textTheme.bodyMedium?.toJetBrainsMono,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
+    final l10n = context.appLocalizations;
     return SizedBox(
       height: getWidgetHeight(1),
       child: RepaintBoundary(
         child: CommonCard(
           radius: AppCorner.lg,
-          info: Info(
-            iconData: Icons.memory,
-            label: appLocalizations.memoryInfo,
-          ),
-          onPressed: () {
-            _core.requestGc();
-          },
-          child: Container(
-            padding: baseInfoEdgeInsets.copyWith(top: 0),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
+          onPressed: _core.requestGc,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
               children: [
-                SizedBox(
-                  height: globalState.measure.bodyMediumHeight + 2,
+                Icon(Icons.memory_outlined, color: context.colorScheme.primary),
+                const SizedBox(width: 12),
+                Expanded(
                   child: ValueListenableBuilder(
-                    valueListenable: _memoryStateNotifier,
-                    builder: (_, memory, _) {
-                      final traffic = memory.traffic;
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                    valueListenable: _appMemory,
+                    builder: (_, appMemory, _) => ValueListenableBuilder(
+                      valueListenable: _coreMemory,
+                      builder: (_, coreMemory, _) => Row(
                         children: [
-                          Text(
-                            traffic.value,
-                            style: context.textTheme.bodyMedium?.toLight
-                                .adjustSize(1),
-                          ),
+                          _value(context, l10n.application, appMemory),
                           const SizedBox(width: 8),
-                          Text(
-                            traffic.unit,
-                            style: context.textTheme.bodyMedium?.toLight
-                                .adjustSize(1),
-                          ),
+                          _value(context, l10n.core, coreMemory),
                         ],
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
               ],

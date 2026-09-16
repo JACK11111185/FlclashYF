@@ -22,6 +22,7 @@ class SetupAction extends _$SetupAction {
 
   final _setupScheduler = SerialTaskScheduler();
   final _listenerScheduler = SerialTaskScheduler();
+  final _profileEpoch = ProfileSwitchEpoch();
   _RunRequest? _latestRunRequest;
   DateTime? _startTime;
 
@@ -374,9 +375,32 @@ class SetupAction extends _$SetupAction {
   Future<String> getProfileWithId(int profileId) async {
     try {
       final setupState = await ref.read(setupStateProvider(profileId).future);
+      final routeGroups = await database.proxyGroupsDao
+          .queryRouteManaged(profileId)
+          .get();
+      final routeRules = await database.rulesDao
+          .queryProfileRouteRules(profileId)
+          .get();
+      final routeProviders = await database.routeRuleProvidersDao
+          .query(profileId)
+          .get();
+      final routeRuleProviders = {
+        for (final provider in routeProviders)
+          provider.name: {
+            'type': 'http',
+            'url': provider.url,
+            'behavior': provider.behavior,
+            'format': provider.format,
+            'interval': provider.interval,
+          },
+      };
       final patchClashConfig = ref.read(patchClashConfigProvider);
       final res = await getProfile(
-        setupState: setupState,
+        setupState: setupState.copyWith(
+          routeGroups: routeGroups,
+          routeRules: routeRules,
+          routeRuleProviders: routeRuleProviders,
+        ),
         patchConfig: patchClashConfig,
       );
       return res.yaml;
@@ -460,6 +484,9 @@ class SetupAction extends _$SetupAction {
       ref.read(profilesProvider.notifier).put(nextProfile);
     }
     commonPrint.log('setup ===> ${profile?.realLabel}');
+    final setupProfileId = profile?.id;
+    final setupEpoch = _profileEpoch.select(setupProfileId);
+    ref.read(groupsProvider.notifier).value = [];
     final patchConfig = ref.read(patchClashConfigProvider);
     final shouldContinueSetup = await requestAdmin(patchConfig.tun.enable);
     if (!shouldContinueSetup) {
@@ -512,7 +539,12 @@ class SetupAction extends _$SetupAction {
         }
         globalState.lastConfigMd5 = yamlMd5;
         ref.read(checkIpNumProvider.notifier).add();
-        await onUpdated?.call();
+        if (_profileEpoch.accepts(
+          epoch: setupEpoch,
+          profileId: ref.read(currentProfileIdProvider),
+        )) {
+          await onUpdated?.call();
+        }
       },
       silence: true,
       tag: !silence ? LoadingTag.proxies : null,

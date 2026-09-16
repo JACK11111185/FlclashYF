@@ -268,12 +268,13 @@ void main() {
       includeAllProxies: true,
       includeAllProviders: true,
       hidden: false,
+      routeManaged: false,
       icon: 'icon',
       order: 'a0',
     );
 
-    expect(group.toColumns(true), hasLength(22));
-    expect(group.toCompanion(true).toColumns(true), hasLength(22));
+    expect(group.toColumns(true), hasLength(23));
+    expect(group.toCompanion(true).toColumns(true), hasLength(23));
     expect(RawProxyGroup.fromJson(group.toJson()).toJson(), group.toJson());
     expect(group.copyWith(name: 'Changed').name, 'Changed');
     expect(
@@ -291,9 +292,14 @@ void main() {
     expect(group.toString(), contains('Select'));
     expect(group.hashCode, isNonZero);
 
-    const emptyGroup = RawProxyGroup(id: 21, name: 'Empty', type: 'select');
-    expect(emptyGroup.toColumns(true), hasLength(3));
-    expect(emptyGroup.toColumns(false), hasLength(22));
+    const emptyGroup = RawProxyGroup(
+      id: 21,
+      name: 'Empty',
+      type: 'select',
+      routeManaged: false,
+    );
+    expect(emptyGroup.toColumns(true), hasLength(4));
+    expect(emptyGroup.toColumns(false), hasLength(23));
 
     final companion =
         ProxyGroupsCompanion.insert(name: 'Inserted', type: 'select').copyWith(

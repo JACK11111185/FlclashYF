@@ -48,6 +48,18 @@ final class TunnelController {
     }
   }
 
+  func profileDidChange() {
+    managerStore.invalidateCachedManager()
+  }
+
+  func didApplyCurrentProfile() {
+    sharedStateStore.markCurrentProfileApplied()
+  }
+
+  func isCurrentProfileApplied() -> Bool {
+    sharedStateStore.isCurrentProfileApplied()
+  }
+
   func startObserving() {
     if tunnelStatusObserver == nil {
       tunnelStatusObserver = NotificationCenter.default.addObserver(
@@ -93,6 +105,38 @@ final class TunnelController {
   }
 
   func sendProviderMessage(_ data: Data) async throws -> String {
+    let epoch = sharedStateStore.profileEpoch()
+    var lastError: Error?
+    for attempt in 0..<3 {
+      guard sharedStateStore.isCurrentProfileEpoch(epoch) else {
+        throw ProviderMessageError(
+          code: "stale_profile",
+          message: "profile changed while sending network extension message"
+        )
+      }
+      do {
+        let response = try await sendProviderMessageOnce(data)
+        guard sharedStateStore.isCurrentProfileEpoch(epoch) else {
+          throw ProviderMessageError(
+            code: "stale_profile",
+            message: "profile changed while awaiting network extension response"
+          )
+        }
+        return response
+      } catch let error as ProviderMessageError where error.code == "empty_response" {
+        lastError = error
+        if attempt < 2 {
+          try? await Task.sleep(nanoseconds: 500_000_000)
+        }
+      }
+    }
+    throw lastError ?? ProviderMessageError(
+      code: "empty_response",
+      message: "empty network extension response"
+    )
+  }
+
+  private func sendProviderMessageOnce(_ data: Data) async throws -> String {
     let manager: NETunnelProviderManager?
     do {
       manager = try await managerStore.loadManager(createIfNeeded: false)

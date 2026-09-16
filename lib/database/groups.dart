@@ -52,6 +52,8 @@ class ProxyGroups extends Table {
 
   BoolColumn get includeAllProviders => boolean().nullable()();
 
+  BoolColumn get routeManaged => boolean().withDefault(const Constant(false))();
+
   BoolColumn get hidden => boolean().nullable()();
 
   TextColumn get icon => text().nullable()();
@@ -69,11 +71,31 @@ class ProxyGroupsDao extends DatabaseAccessor<Database>
 
   Selectable<ProxyGroup> query(int profileId) {
     final stmt = proxyGroups.select();
-    stmt.where((row) => row.profileId.equals(profileId));
+    stmt.where(
+      (row) => row.profileId.equals(profileId) & row.routeManaged.equals(false),
+    );
     stmt.orderBy([
       (t) => OrderingTerm(expression: t.order, nulls: NullsOrder.last),
     ]);
     return stmt.map((item) => item.toProxyGroup());
+  }
+
+  Selectable<ProxyGroup> queryRouteManaged(int profileId) {
+    final stmt = proxyGroups.select()
+      ..where(
+        (row) =>
+            row.profileId.equals(profileId) & row.routeManaged.equals(true),
+      )
+      ..orderBy([
+        (t) => OrderingTerm(expression: t.order, nulls: NullsOrder.last),
+      ]);
+    return stmt.map((item) => item.toProxyGroup());
+  }
+
+  Future<int> put(ProxyGroup group, int profileId) {
+    return proxyGroups.insertOnConflictUpdate(
+      group.copyWith(routeManaged: true).toCompanion(profileId),
+    );
   }
 
   Selectable<int> count(int profileId) {
@@ -163,6 +185,7 @@ extension RawProxyGroupExt on RawProxyGroup {
       includeAll: includeAll,
       includeAllProxies: includeAllProxies,
       includeAllProviders: includeAllProviders,
+      routeManaged: routeManaged,
       hidden: hidden,
       icon: icon,
       order: order,
@@ -192,6 +215,7 @@ extension ProxyGroupsCompanionExt on ProxyGroup {
       includeAll: Value(includeAll),
       includeAllProxies: Value(includeAllProxies),
       includeAllProviders: Value(includeAllProviders),
+      routeManaged: Value(routeManaged),
       hidden: Value(hidden),
       icon: Value(icon),
       order: Value(order ?? this.order),

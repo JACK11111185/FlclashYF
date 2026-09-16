@@ -4,7 +4,12 @@ final class SharedStateStore {
   private let sharedStateKey = "sharedState"
   private let setupParamsKey = "setupParams"
   private let runTimeKey = "runTime"
+  private let profileEpochKey = "profileEpoch"
+  private let appliedProfileEpochKey = "appliedProfileEpoch"
   private let eventQueueDirectoryName = "core-events"
+
+  private var lastProfileID: Int?
+  private var profileChanged = false
 
   let appGroupIdentifier = "group.\(Bundle.main.bundleIdentifier!)"
   let eventNotificationName = "\(Bundle.main.bundleIdentifier!).NECore.event"
@@ -13,18 +18,71 @@ final class SharedStateStore {
     guard let userDefaults = UserDefaults(suiteName: appGroupIdentifier) else {
       return false
     }
-    if let json = try? JSONSerialization.jsonObject(with: data)
-      as? [String: Any],
-      let setupParams = json[setupParamsKey],
-      !(setupParams is NSNull),
-      JSONSerialization.isValidJSONObject(setupParams),
-      let setupData = try? JSONSerialization.data(withJSONObject: setupParams)
+    if lastProfileID == nil,
+      let existingData = userDefaults.data(forKey: sharedStateKey),
+      let existing = try? JSONSerialization.jsonObject(with: existingData)
+        as? [String: Any]
     {
-      userDefaults.set(setupData, forKey: setupParamsKey)
+      lastProfileID = existing["currentProfileId"] as? Int
     }
-    userDefaults.set(data, forKey: sharedStateKey)
+    let previousProfileID = lastProfileID
+    var stateData = data
+    if var json = try? JSONSerialization.jsonObject(with: data)
+      as? [String: Any]
+    {
+      let profileID = json["currentProfileId"] as? Int
+      profileChanged = previousProfileID != profileID
+      let epoch = userDefaults.integer(forKey: profileEpochKey)
+      let nextEpoch = lastProfileID != profileID ? epoch &+ 1 : max(epoch, 1)
+      lastProfileID = profileID
+      userDefaults.set(nextEpoch, forKey: profileEpochKey)
+      json["profileEpoch"] = nextEpoch
+      stateData = (try? JSONSerialization.data(withJSONObject: json)) ?? data
+      if let setupParams = json[setupParamsKey],
+        !(setupParams is NSNull),
+        JSONSerialization.isValidJSONObject(setupParams),
+        let setupData = try? JSONSerialization.data(withJSONObject: setupParams)
+      {
+        userDefaults.set(setupData, forKey: setupParamsKey)
+      }
+    }
+    userDefaults.set(stateData, forKey: sharedStateKey)
     userDefaults.synchronize()
     return true
+  }
+
+  func consumeProfileChange() -> Bool {
+    let changed = profileChanged
+    profileChanged = false
+    return changed
+  }
+
+  func profileEpoch() -> UInt64 {
+    UInt64(UserDefaults(suiteName: appGroupIdentifier)?.integer(
+      forKey: profileEpochKey
+    ) ?? 0)
+  }
+
+  func markCurrentProfileApplied() {
+    UserDefaults(suiteName: appGroupIdentifier)?.set(
+      profileEpoch(),
+      forKey: appliedProfileEpochKey
+    )
+  }
+
+  func appliedProfileEpoch() -> UInt64 {
+    UInt64(UserDefaults(suiteName: appGroupIdentifier)?.integer(
+      forKey: appliedProfileEpochKey
+    ) ?? 0)
+  }
+
+  func isCurrentProfileApplied() -> Bool {
+    let epoch = profileEpoch()
+    return epoch != 0 && appliedProfileEpoch() == epoch
+  }
+
+  func isCurrentProfileEpoch(_ epoch: UInt64) -> Bool {
+    profileEpoch() == epoch
   }
 
   func loadTunnelConfiguration() -> TunnelConfiguration {

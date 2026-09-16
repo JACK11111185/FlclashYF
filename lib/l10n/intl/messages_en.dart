@@ -465,6 +465,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "download": MessageLookupByLibrary.simpleMessage("Download"),
     "downloadSpeed": MessageLookupByLibrary.simpleMessage("Download speed"),
     "downloadTraffic": MessageLookupByLibrary.simpleMessage("Download traffic"),
+    "dropExactlyOneProfile": MessageLookupByLibrary.simpleMessage(
+      "Drop exactly one profile file",
+    ),
+    "droppedItemNotFile": MessageLookupByLibrary.simpleMessage(
+      "Dropped item is not a file",
+    ),
     "easyTierConnectionLatency": MessageLookupByLibrary.simpleMessage(
       "Connection latency",
     ),
@@ -602,6 +608,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "fileDesc": MessageLookupByLibrary.simpleMessage(
       "Upload a profile file directly",
     ),
+    "fileImport": MessageLookupByLibrary.simpleMessage("File import"),
     "fileIsUpdate": MessageLookupByLibrary.simpleMessage(
       "The file has been modified. Save the changes?",
     ),
@@ -735,9 +742,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Enter the rule content",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -1007,11 +1015,30 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "Please enter the auto-update interval",
         ),
+    "profileFileInvalidUtf8": MessageLookupByLibrary.simpleMessage(
+      "Profile file is not valid UTF-8",
+    ),
+    "profileFileTooLarge": MessageLookupByLibrary.simpleMessage(
+      "Profile file is too large",
+    ),
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "The profile has been modified. Turn off auto update?",
     ),
     "profileNameNullValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter the profile name",
+    ),
+    "profileTemplate": MessageLookupByLibrary.simpleMessage("Profile template"),
+    "profileTemplateDesc": MessageLookupByLibrary.simpleMessage(
+      "Edit the template used to import proxy links",
+    ),
+    "profileTemplateResetConfirm": MessageLookupByLibrary.simpleMessage(
+      "Restore the built-in profile template?",
+    ),
+    "profileTemplateSaved": MessageLookupByLibrary.simpleMessage(
+      "Profile template saved",
+    ),
+    "profileTemplateYaml": MessageLookupByLibrary.simpleMessage(
+      "Template YAML",
     ),
     "profileUrlInvalidValidationDesc": MessageLookupByLibrary.simpleMessage(
       "Please enter a valid profile URL",
@@ -1128,6 +1155,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "restore": MessageLookupByLibrary.simpleMessage("Restore"),
     "restoreAllData": MessageLookupByLibrary.simpleMessage("Restore all data"),
+    "restoreDefault": MessageLookupByLibrary.simpleMessage("Restore default"),
     "restoreException": MessageLookupByLibrary.simpleMessage("Restore error"),
     "restoreFromFileDesc": MessageLookupByLibrary.simpleMessage(
       "Restore data from a file",
@@ -1150,15 +1178,31 @@ class MessageLookup extends MessageLookupByLibrary {
       "Restore successful",
     ),
     "role": MessageLookupByLibrary.simpleMessage("Role"),
+    "route": MessageLookupByLibrary.simpleMessage("Route"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Route addresses"),
     "routeAddressDesc": MessageLookupByLibrary.simpleMessage(
       "Configure the listened route addresses",
     ),
+    "routeGroupType": MessageLookupByLibrary.simpleMessage("Group type"),
+    "routeGroups": MessageLookupByLibrary.simpleMessage("Route groups"),
+    "routeInputHint": MessageLookupByLibrary.simpleMessage(
+      "Domain, IP, CIDR, or rule-set URL",
+    ),
+    "routeInvalidInput": MessageLookupByLibrary.simpleMessage(
+      "Enter a valid domain, IP, CIDR, or HTTP(S) URL",
+    ),
+    "routeMembers": MessageLookupByLibrary.simpleMessage("Nodes and groups"),
     "routeMode": MessageLookupByLibrary.simpleMessage("Route mode"),
     "routeModeBypassPrivate": MessageLookupByLibrary.simpleMessage(
       "Bypass private addresses",
     ),
     "routeModeConfig": MessageLookupByLibrary.simpleMessage("Use config"),
+    "routeNoProfile": MessageLookupByLibrary.simpleMessage(
+      "Select a profile to configure routing",
+    ),
+    "routeProviders": MessageLookupByLibrary.simpleMessage("Rule providers"),
+    "routeRules": MessageLookupByLibrary.simpleMessage("Route rules"),
+    "routeTarget": MessageLookupByLibrary.simpleMessage("Target"),
     "routes": MessageLookupByLibrary.simpleMessage("Routes"),
     "ru": MessageLookupByLibrary.simpleMessage("Russian"),
     "rule": MessageLookupByLibrary.simpleMessage("Rule"),
@@ -1483,6 +1527,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "unmaximize": MessageLookupByLibrary.simpleMessage("Restore down"),
     "unnamed": MessageLookupByLibrary.simpleMessage("Unnamed"),
     "unpinWindow": MessageLookupByLibrary.simpleMessage("Unpin window"),
+    "unsupportedProfileFileType": MessageLookupByLibrary.simpleMessage(
+      "Unsupported profile file type",
+    ),
     "update": MessageLookupByLibrary.simpleMessage("Update"),
     "upload": MessageLookupByLibrary.simpleMessage("Upload"),
     "uploadSpeed": MessageLookupByLibrary.simpleMessage("Upload speed"),

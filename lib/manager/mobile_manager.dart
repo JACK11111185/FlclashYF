@@ -43,12 +43,24 @@ class _MobileManagerState extends ConsumerState<MobileManager>
           await preferences.saveShareState(next);
         }, duration: const Duration(seconds: 1));
         if (prev?.needSyncSharedState != next.needSyncSharedState) {
-          service?.syncState(next.needSyncSharedState);
+          _syncSharedState(next.needSyncSharedState);
         }
+      }
+    });
+    ref.listenManual(currentProfileIdProvider, (previous, next) {
+      if (previous != next) {
+        _syncSharedState(ref.read(sharedStateProvider).needSyncSharedState);
       }
     });
     service?.addListener(this);
     app?.onPackagesChanged = _reloadPackages;
+  }
+
+  void _syncSharedState(SharedState state) {
+    service?.syncState(
+      state,
+      profileId: ref.read(currentProfileIdProvider),
+    );
   }
 
   void _reloadPackages() {

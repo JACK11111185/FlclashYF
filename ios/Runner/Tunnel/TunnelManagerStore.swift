@@ -102,16 +102,20 @@ final class TunnelManagerStore {
     }
   }
 
-  @discardableResult
-  func invalidateCachedManager(forPreferenceError error: Error) -> Bool {
-    guard isRetryablePreferenceError(error) else {
-      return false
-    }
+  func invalidateCachedManager() {
     cacheGeneration &+= 1
     if case .loaded = cacheState {
       cacheState = .unloaded
     }
     log("invalidate manager generation=\(cacheGeneration)")
+  }
+
+  @discardableResult
+  func invalidateCachedManager(forPreferenceError error: Error) -> Bool {
+    guard isRetryablePreferenceError(error) else {
+      return false
+    }
+    invalidateCachedManager()
     return true
   }
 

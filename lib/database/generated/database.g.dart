@@ -2255,6 +2255,21 @@ class $ProxyGroupsTable extends ProxyGroups
       'CHECK ("include_all_providers" IN (0, 1))',
     ),
   );
+  static const VerificationMeta _routeManagedMeta = const VerificationMeta(
+    'routeManaged',
+  );
+  @override
+  late final GeneratedColumn<bool> routeManaged = GeneratedColumn<bool>(
+    'route_managed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("route_managed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _hiddenMeta = const VerificationMeta('hidden');
   @override
   late final GeneratedColumn<bool> hidden = GeneratedColumn<bool>(
@@ -2306,6 +2321,7 @@ class $ProxyGroupsTable extends ProxyGroups
     includeAll,
     includeAllProxies,
     includeAllProviders,
+    routeManaged,
     hidden,
     icon,
     order,
@@ -2446,6 +2462,15 @@ class $ProxyGroupsTable extends ProxyGroups
         ),
       );
     }
+    if (data.containsKey('route_managed')) {
+      context.handle(
+        _routeManagedMeta,
+        routeManaged.isAcceptableOrUnknown(
+          data['route_managed']!,
+          _routeManagedMeta,
+        ),
+      );
+    }
     if (data.containsKey('hidden')) {
       context.handle(
         _hiddenMeta,
@@ -2553,6 +2578,10 @@ class $ProxyGroupsTable extends ProxyGroups
         DriftSqlType.bool,
         data['${effectivePrefix}include_all_providers'],
       ),
+      routeManaged: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}route_managed'],
+      )!,
       hidden: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}hidden'],
@@ -2603,6 +2632,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
   final bool? includeAll;
   final bool? includeAllProxies;
   final bool? includeAllProviders;
+  final bool routeManaged;
   final bool? hidden;
   final String? icon;
   final String? order;
@@ -2626,6 +2656,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     this.includeAll,
     this.includeAllProxies,
     this.includeAllProviders,
+    required this.routeManaged,
     this.hidden,
     this.icon,
     this.order,
@@ -2688,6 +2719,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     if (!nullToAbsent || includeAllProviders != null) {
       map['include_all_providers'] = Variable<bool>(includeAllProviders);
     }
+    map['route_managed'] = Variable<bool>(routeManaged);
     if (!nullToAbsent || hidden != null) {
       map['hidden'] = Variable<bool>(hidden);
     }
@@ -2747,6 +2779,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       includeAllProviders: includeAllProviders == null && nullToAbsent
           ? const Value.absent()
           : Value(includeAllProviders),
+      routeManaged: Value(routeManaged),
       hidden: hidden == null && nullToAbsent
           ? const Value.absent()
           : Value(hidden),
@@ -2784,6 +2817,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       includeAllProviders: serializer.fromJson<bool?>(
         json['includeAllProviders'],
       ),
+      routeManaged: serializer.fromJson<bool>(json['routeManaged']),
       hidden: serializer.fromJson<bool?>(json['hidden']),
       icon: serializer.fromJson<String?>(json['icon']),
       order: serializer.fromJson<String?>(json['order']),
@@ -2812,6 +2846,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       'includeAll': serializer.toJson<bool?>(includeAll),
       'includeAllProxies': serializer.toJson<bool?>(includeAllProxies),
       'includeAllProviders': serializer.toJson<bool?>(includeAllProviders),
+      'routeManaged': serializer.toJson<bool>(routeManaged),
       'hidden': serializer.toJson<bool?>(hidden),
       'icon': serializer.toJson<String?>(icon),
       'order': serializer.toJson<String?>(order),
@@ -2838,6 +2873,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     Value<bool?> includeAll = const Value.absent(),
     Value<bool?> includeAllProxies = const Value.absent(),
     Value<bool?> includeAllProviders = const Value.absent(),
+    bool? routeManaged,
     Value<bool?> hidden = const Value.absent(),
     Value<String?> icon = const Value.absent(),
     Value<String?> order = const Value.absent(),
@@ -2871,6 +2907,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     includeAllProviders: includeAllProviders.present
         ? includeAllProviders.value
         : this.includeAllProviders,
+    routeManaged: routeManaged ?? this.routeManaged,
     hidden: hidden.present ? hidden.value : this.hidden,
     icon: icon.present ? icon.value : this.icon,
     order: order.present ? order.value : this.order,
@@ -2912,6 +2949,9 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
       includeAllProviders: data.includeAllProviders.present
           ? data.includeAllProviders.value
           : this.includeAllProviders,
+      routeManaged: data.routeManaged.present
+          ? data.routeManaged.value
+          : this.routeManaged,
       hidden: data.hidden.present ? data.hidden.value : this.hidden,
       icon: data.icon.present ? data.icon.value : this.icon,
       order: data.order.present ? data.order.value : this.order,
@@ -2940,6 +2980,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
           ..write('includeAll: $includeAll, ')
           ..write('includeAllProxies: $includeAllProxies, ')
           ..write('includeAllProviders: $includeAllProviders, ')
+          ..write('routeManaged: $routeManaged, ')
           ..write('hidden: $hidden, ')
           ..write('icon: $icon, ')
           ..write('order: $order')
@@ -2968,6 +3009,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
     includeAll,
     includeAllProxies,
     includeAllProviders,
+    routeManaged,
     hidden,
     icon,
     order,
@@ -2995,6 +3037,7 @@ class RawProxyGroup extends DataClass implements Insertable<RawProxyGroup> {
           other.includeAll == this.includeAll &&
           other.includeAllProxies == this.includeAllProxies &&
           other.includeAllProviders == this.includeAllProviders &&
+          other.routeManaged == this.routeManaged &&
           other.hidden == this.hidden &&
           other.icon == this.icon &&
           other.order == this.order);
@@ -3020,6 +3063,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
   final Value<bool?> includeAll;
   final Value<bool?> includeAllProxies;
   final Value<bool?> includeAllProviders;
+  final Value<bool> routeManaged;
   final Value<bool?> hidden;
   final Value<String?> icon;
   final Value<String?> order;
@@ -3043,6 +3087,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     this.includeAll = const Value.absent(),
     this.includeAllProxies = const Value.absent(),
     this.includeAllProviders = const Value.absent(),
+    this.routeManaged = const Value.absent(),
     this.hidden = const Value.absent(),
     this.icon = const Value.absent(),
     this.order = const Value.absent(),
@@ -3067,6 +3112,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     this.includeAll = const Value.absent(),
     this.includeAllProxies = const Value.absent(),
     this.includeAllProviders = const Value.absent(),
+    this.routeManaged = const Value.absent(),
     this.hidden = const Value.absent(),
     this.icon = const Value.absent(),
     this.order = const Value.absent(),
@@ -3092,6 +3138,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     Expression<bool>? includeAll,
     Expression<bool>? includeAllProxies,
     Expression<bool>? includeAllProviders,
+    Expression<bool>? routeManaged,
     Expression<bool>? hidden,
     Expression<String>? icon,
     Expression<String>? order,
@@ -3117,6 +3164,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
       if (includeAllProxies != null) 'include_all_proxies': includeAllProxies,
       if (includeAllProviders != null)
         'include_all_providers': includeAllProviders,
+      if (routeManaged != null) 'route_managed': routeManaged,
       if (hidden != null) 'hidden': hidden,
       if (icon != null) 'icon': icon,
       if (order != null) 'order': order,
@@ -3143,6 +3191,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     Value<bool?>? includeAll,
     Value<bool?>? includeAllProxies,
     Value<bool?>? includeAllProviders,
+    Value<bool>? routeManaged,
     Value<bool?>? hidden,
     Value<String?>? icon,
     Value<String?>? order,
@@ -3167,6 +3216,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
       includeAll: includeAll ?? this.includeAll,
       includeAllProxies: includeAllProxies ?? this.includeAllProxies,
       includeAllProviders: includeAllProviders ?? this.includeAllProviders,
+      routeManaged: routeManaged ?? this.routeManaged,
       hidden: hidden ?? this.hidden,
       icon: icon ?? this.icon,
       order: order ?? this.order,
@@ -3237,6 +3287,9 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
     if (includeAllProviders.present) {
       map['include_all_providers'] = Variable<bool>(includeAllProviders.value);
     }
+    if (routeManaged.present) {
+      map['route_managed'] = Variable<bool>(routeManaged.value);
+    }
     if (hidden.present) {
       map['hidden'] = Variable<bool>(hidden.value);
     }
@@ -3271,6 +3324,7 @@ class ProxyGroupsCompanion extends UpdateCompanion<RawProxyGroup> {
           ..write('includeAll: $includeAll, ')
           ..write('includeAllProxies: $includeAllProxies, ')
           ..write('includeAllProviders: $includeAllProviders, ')
+          ..write('routeManaged: $routeManaged, ')
           ..write('hidden: $hidden, ')
           ..write('icon: $icon, ')
           ..write('order: $order')
@@ -3499,6 +3553,447 @@ class IconRecordsCompanion extends UpdateCompanion<IconRecord> {
   }
 }
 
+class $RouteRuleProvidersTable extends RouteRuleProviders
+    with TableInfo<$RouteRuleProvidersTable, RouteRuleProvider> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RouteRuleProvidersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _profileIdMeta = const VerificationMeta(
+    'profileId',
+  );
+  @override
+  late final GeneratedColumn<int> profileId = GeneratedColumn<int>(
+    'profile_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES profiles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
+    'url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _behaviorMeta = const VerificationMeta(
+    'behavior',
+  );
+  @override
+  late final GeneratedColumn<String> behavior = GeneratedColumn<String>(
+    'behavior',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _formatMeta = const VerificationMeta('format');
+  @override
+  late final GeneratedColumn<String> format = GeneratedColumn<String>(
+    'format',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _intervalMeta = const VerificationMeta(
+    'interval',
+  );
+  @override
+  late final GeneratedColumn<int> interval = GeneratedColumn<int>(
+    'interval',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    profileId,
+    url,
+    behavior,
+    format,
+    interval,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'route_rule_providers';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RouteRuleProvider> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('profile_id')) {
+      context.handle(
+        _profileIdMeta,
+        profileId.isAcceptableOrUnknown(data['profile_id']!, _profileIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_profileIdMeta);
+    }
+    if (data.containsKey('url')) {
+      context.handle(
+        _urlMeta,
+        url.isAcceptableOrUnknown(data['url']!, _urlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_urlMeta);
+    }
+    if (data.containsKey('behavior')) {
+      context.handle(
+        _behaviorMeta,
+        behavior.isAcceptableOrUnknown(data['behavior']!, _behaviorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_behaviorMeta);
+    }
+    if (data.containsKey('format')) {
+      context.handle(
+        _formatMeta,
+        format.isAcceptableOrUnknown(data['format']!, _formatMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_formatMeta);
+    }
+    if (data.containsKey('interval')) {
+      context.handle(
+        _intervalMeta,
+        interval.isAcceptableOrUnknown(data['interval']!, _intervalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_intervalMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RouteRuleProvider map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RouteRuleProvider(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      profileId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}profile_id'],
+      )!,
+      url: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}url'],
+      )!,
+      behavior: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}behavior'],
+      )!,
+      format: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}format'],
+      )!,
+      interval: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}interval'],
+      )!,
+    );
+  }
+
+  @override
+  $RouteRuleProvidersTable createAlias(String alias) {
+    return $RouteRuleProvidersTable(attachedDatabase, alias);
+  }
+}
+
+class RouteRuleProvider extends DataClass
+    implements Insertable<RouteRuleProvider> {
+  final int id;
+  final String name;
+  final int profileId;
+  final String url;
+  final String behavior;
+  final String format;
+  final int interval;
+  const RouteRuleProvider({
+    required this.id,
+    required this.name,
+    required this.profileId,
+    required this.url,
+    required this.behavior,
+    required this.format,
+    required this.interval,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['profile_id'] = Variable<int>(profileId);
+    map['url'] = Variable<String>(url);
+    map['behavior'] = Variable<String>(behavior);
+    map['format'] = Variable<String>(format);
+    map['interval'] = Variable<int>(interval);
+    return map;
+  }
+
+  RouteRuleProvidersCompanion toCompanion(bool nullToAbsent) {
+    return RouteRuleProvidersCompanion(
+      id: Value(id),
+      name: Value(name),
+      profileId: Value(profileId),
+      url: Value(url),
+      behavior: Value(behavior),
+      format: Value(format),
+      interval: Value(interval),
+    );
+  }
+
+  factory RouteRuleProvider.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RouteRuleProvider(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      profileId: serializer.fromJson<int>(json['profileId']),
+      url: serializer.fromJson<String>(json['url']),
+      behavior: serializer.fromJson<String>(json['behavior']),
+      format: serializer.fromJson<String>(json['format']),
+      interval: serializer.fromJson<int>(json['interval']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'profileId': serializer.toJson<int>(profileId),
+      'url': serializer.toJson<String>(url),
+      'behavior': serializer.toJson<String>(behavior),
+      'format': serializer.toJson<String>(format),
+      'interval': serializer.toJson<int>(interval),
+    };
+  }
+
+  RouteRuleProvider copyWith({
+    int? id,
+    String? name,
+    int? profileId,
+    String? url,
+    String? behavior,
+    String? format,
+    int? interval,
+  }) => RouteRuleProvider(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    profileId: profileId ?? this.profileId,
+    url: url ?? this.url,
+    behavior: behavior ?? this.behavior,
+    format: format ?? this.format,
+    interval: interval ?? this.interval,
+  );
+  RouteRuleProvider copyWithCompanion(RouteRuleProvidersCompanion data) {
+    return RouteRuleProvider(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      profileId: data.profileId.present ? data.profileId.value : this.profileId,
+      url: data.url.present ? data.url.value : this.url,
+      behavior: data.behavior.present ? data.behavior.value : this.behavior,
+      format: data.format.present ? data.format.value : this.format,
+      interval: data.interval.present ? data.interval.value : this.interval,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RouteRuleProvider(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('profileId: $profileId, ')
+          ..write('url: $url, ')
+          ..write('behavior: $behavior, ')
+          ..write('format: $format, ')
+          ..write('interval: $interval')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, profileId, url, behavior, format, interval);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RouteRuleProvider &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.profileId == this.profileId &&
+          other.url == this.url &&
+          other.behavior == this.behavior &&
+          other.format == this.format &&
+          other.interval == this.interval);
+}
+
+class RouteRuleProvidersCompanion extends UpdateCompanion<RouteRuleProvider> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<int> profileId;
+  final Value<String> url;
+  final Value<String> behavior;
+  final Value<String> format;
+  final Value<int> interval;
+  const RouteRuleProvidersCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.profileId = const Value.absent(),
+    this.url = const Value.absent(),
+    this.behavior = const Value.absent(),
+    this.format = const Value.absent(),
+    this.interval = const Value.absent(),
+  });
+  RouteRuleProvidersCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    required int profileId,
+    required String url,
+    required String behavior,
+    required String format,
+    required int interval,
+  }) : name = Value(name),
+       profileId = Value(profileId),
+       url = Value(url),
+       behavior = Value(behavior),
+       format = Value(format),
+       interval = Value(interval);
+  static Insertable<RouteRuleProvider> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<int>? profileId,
+    Expression<String>? url,
+    Expression<String>? behavior,
+    Expression<String>? format,
+    Expression<int>? interval,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (profileId != null) 'profile_id': profileId,
+      if (url != null) 'url': url,
+      if (behavior != null) 'behavior': behavior,
+      if (format != null) 'format': format,
+      if (interval != null) 'interval': interval,
+    });
+  }
+
+  RouteRuleProvidersCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<int>? profileId,
+    Value<String>? url,
+    Value<String>? behavior,
+    Value<String>? format,
+    Value<int>? interval,
+  }) {
+    return RouteRuleProvidersCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      profileId: profileId ?? this.profileId,
+      url: url ?? this.url,
+      behavior: behavior ?? this.behavior,
+      format: format ?? this.format,
+      interval: interval ?? this.interval,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (profileId.present) {
+      map['profile_id'] = Variable<int>(profileId.value);
+    }
+    if (url.present) {
+      map['url'] = Variable<String>(url.value);
+    }
+    if (behavior.present) {
+      map['behavior'] = Variable<String>(behavior.value);
+    }
+    if (format.present) {
+      map['format'] = Variable<String>(format.value);
+    }
+    if (interval.present) {
+      map['interval'] = Variable<int>(interval.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RouteRuleProvidersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('profileId: $profileId, ')
+          ..write('url: $url, ')
+          ..write('behavior: $behavior, ')
+          ..write('format: $format, ')
+          ..write('interval: $interval')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
   $DatabaseManager get managers => $DatabaseManager(this);
@@ -3510,6 +4005,8 @@ abstract class _$Database extends GeneratedDatabase {
   );
   late final $ProxyGroupsTable proxyGroups = $ProxyGroupsTable(this);
   late final $IconRecordsTable iconRecords = $IconRecordsTable(this);
+  late final $RouteRuleProvidersTable routeRuleProviders =
+      $RouteRuleProvidersTable(this);
   late final Index idxRuleTarget = Index(
     'idx_rule_target',
     'CREATE INDEX idx_rule_target ON rules (rule_target)',
@@ -3531,6 +4028,8 @@ abstract class _$Database extends GeneratedDatabase {
   late final RulesDao rulesDao = RulesDao(this as Database);
   late final ProxyGroupsDao proxyGroupsDao = ProxyGroupsDao(this as Database);
   late final IconRecordsDao iconRecordsDao = IconRecordsDao(this as Database);
+  late final RouteRuleProvidersDao routeRuleProvidersDao =
+      RouteRuleProvidersDao(this as Database);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3542,6 +4041,7 @@ abstract class _$Database extends GeneratedDatabase {
     profileRuleLinks,
     proxyGroups,
     iconRecords,
+    routeRuleProviders,
     idxRuleTarget,
     idxProfileSceneOrder,
     idxProfileNameOrder,
@@ -3569,6 +4069,13 @@ abstract class _$Database extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('proxy_groups', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'profiles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('route_rule_providers', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -3647,6 +4154,26 @@ final class $$ProfilesTableReferences
     ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_proxyGroupsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$RouteRuleProvidersTable, List<RouteRuleProvider>>
+  _routeRuleProvidersRefsTable(_$Database db) => MultiTypedResultKey.fromTable(
+    db.routeRuleProviders,
+    aliasName: 'profiles__id__route_rule_providers__profile_id',
+  );
+
+  $$RouteRuleProvidersTableProcessedTableManager get routeRuleProvidersRefs {
+    final manager = $$RouteRuleProvidersTableTableManager(
+      $_db,
+      $_db.routeRuleProviders,
+    ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _routeRuleProvidersRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3786,6 +4313,31 @@ class $$ProfilesTableFilterComposer
           }) => $$ProxyGroupsTableFilterComposer(
             $db: $db,
             $table: $db.proxyGroups,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> routeRuleProvidersRefs(
+    Expression<bool> Function($$RouteRuleProvidersTableFilterComposer f) f,
+  ) {
+    final $$RouteRuleProvidersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.routeRuleProviders,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RouteRuleProvidersTableFilterComposer(
+            $db: $db,
+            $table: $db.routeRuleProviders,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4005,6 +4557,32 @@ class $$ProfilesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> routeRuleProvidersRefs<T extends Object>(
+    Expression<T> Function($$RouteRuleProvidersTableAnnotationComposer a) f,
+  ) {
+    final $$RouteRuleProvidersTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.routeRuleProviders,
+          getReferencedColumn: (t) => t.profileId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RouteRuleProvidersTableAnnotationComposer(
+                $db: $db,
+                $table: $db.routeRuleProviders,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$ProfilesTableTableManager
@@ -4023,6 +4601,7 @@ class $$ProfilesTableTableManager
           PrefetchHooks Function({
             bool profileRuleLinksRefs,
             bool proxyGroupsRefs,
+            bool routeRuleProvidersRefs,
           })
         > {
   $$ProfilesTableTableManager(_$Database db, $ProfilesTable table)
@@ -4115,12 +4694,17 @@ class $$ProfilesTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({profileRuleLinksRefs = false, proxyGroupsRefs = false}) {
+              ({
+                profileRuleLinksRefs = false,
+                proxyGroupsRefs = false,
+                routeRuleProvidersRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (profileRuleLinksRefs) db.profileRuleLinks,
                     if (proxyGroupsRefs) db.proxyGroups,
+                    if (routeRuleProvidersRefs) db.routeRuleProviders,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -4167,6 +4751,27 @@ class $$ProfilesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (routeRuleProvidersRefs)
+                        await $_getPrefetchedData<
+                          RawProfile,
+                          $ProfilesTable,
+                          RouteRuleProvider
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProfilesTableReferences
+                              ._routeRuleProvidersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProfilesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).routeRuleProvidersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.profileId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4187,7 +4792,11 @@ typedef $$ProfilesTableProcessedTableManager =
       $$ProfilesTableUpdateCompanionBuilder,
       (RawProfile, $$ProfilesTableReferences),
       RawProfile,
-      PrefetchHooks Function({bool profileRuleLinksRefs, bool proxyGroupsRefs})
+      PrefetchHooks Function({
+        bool profileRuleLinksRefs,
+        bool proxyGroupsRefs,
+        bool routeRuleProvidersRefs,
+      })
     >;
 typedef $$ScriptsTableCreateCompanionBuilder =
     ScriptsCompanion Function({
@@ -5147,6 +5756,7 @@ typedef $$ProxyGroupsTableCreateCompanionBuilder =
       Value<bool?> includeAll,
       Value<bool?> includeAllProxies,
       Value<bool?> includeAllProviders,
+      Value<bool> routeManaged,
       Value<bool?> hidden,
       Value<String?> icon,
       Value<String?> order,
@@ -5172,6 +5782,7 @@ typedef $$ProxyGroupsTableUpdateCompanionBuilder =
       Value<bool?> includeAll,
       Value<bool?> includeAllProxies,
       Value<bool?> includeAllProviders,
+      Value<bool> routeManaged,
       Value<bool?> hidden,
       Value<String?> icon,
       Value<String?> order,
@@ -5297,6 +5908,11 @@ class $$ProxyGroupsTableFilterComposer
 
   ColumnFilters<bool> get includeAllProviders => $composableBuilder(
     column: $table.includeAllProviders,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get routeManaged => $composableBuilder(
+    column: $table.routeManaged,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5438,6 +6054,11 @@ class $$ProxyGroupsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get routeManaged => $composableBuilder(
+    column: $table.routeManaged,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get hidden => $composableBuilder(
     column: $table.hidden,
     builder: (column) => ColumnOrderings(column),
@@ -5556,6 +6177,11 @@ class $$ProxyGroupsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get routeManaged => $composableBuilder(
+    column: $table.routeManaged,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get hidden =>
       $composableBuilder(column: $table.hidden, builder: (column) => column);
 
@@ -5636,6 +6262,7 @@ class $$ProxyGroupsTableTableManager
                 Value<bool?> includeAll = const Value.absent(),
                 Value<bool?> includeAllProxies = const Value.absent(),
                 Value<bool?> includeAllProviders = const Value.absent(),
+                Value<bool> routeManaged = const Value.absent(),
                 Value<bool?> hidden = const Value.absent(),
                 Value<String?> icon = const Value.absent(),
                 Value<String?> order = const Value.absent(),
@@ -5659,6 +6286,7 @@ class $$ProxyGroupsTableTableManager
                 includeAll: includeAll,
                 includeAllProxies: includeAllProxies,
                 includeAllProviders: includeAllProviders,
+                routeManaged: routeManaged,
                 hidden: hidden,
                 icon: icon,
                 order: order,
@@ -5684,6 +6312,7 @@ class $$ProxyGroupsTableTableManager
                 Value<bool?> includeAll = const Value.absent(),
                 Value<bool?> includeAllProxies = const Value.absent(),
                 Value<bool?> includeAllProviders = const Value.absent(),
+                Value<bool> routeManaged = const Value.absent(),
                 Value<bool?> hidden = const Value.absent(),
                 Value<String?> icon = const Value.absent(),
                 Value<String?> order = const Value.absent(),
@@ -5707,6 +6336,7 @@ class $$ProxyGroupsTableTableManager
                 includeAll: includeAll,
                 includeAllProxies: includeAllProxies,
                 includeAllProviders: includeAllProviders,
+                routeManaged: routeManaged,
                 hidden: hidden,
                 icon: icon,
                 order: order,
@@ -5929,6 +6559,373 @@ typedef $$IconRecordsTableProcessedTableManager =
       IconRecord,
       PrefetchHooks Function()
     >;
+typedef $$RouteRuleProvidersTableCreateCompanionBuilder =
+    RouteRuleProvidersCompanion Function({
+      Value<int> id,
+      required String name,
+      required int profileId,
+      required String url,
+      required String behavior,
+      required String format,
+      required int interval,
+    });
+typedef $$RouteRuleProvidersTableUpdateCompanionBuilder =
+    RouteRuleProvidersCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<int> profileId,
+      Value<String> url,
+      Value<String> behavior,
+      Value<String> format,
+      Value<int> interval,
+    });
+
+final class $$RouteRuleProvidersTableReferences
+    extends
+        BaseReferences<
+          _$Database,
+          $RouteRuleProvidersTable,
+          RouteRuleProvider
+        > {
+  $$RouteRuleProvidersTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ProfilesTable _profileIdTable(_$Database db) =>
+      db.profiles.createAlias('route_rule_providers__profile_id__profiles__id');
+
+  $$ProfilesTableProcessedTableManager get profileId {
+    final $_column = $_itemColumn<int>('profile_id')!;
+
+    final manager = $$ProfilesTableTableManager(
+      $_db,
+      $_db.profiles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_profileIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RouteRuleProvidersTableFilterComposer
+    extends Composer<_$Database, $RouteRuleProvidersTable> {
+  $$RouteRuleProvidersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get behavior => $composableBuilder(
+    column: $table.behavior,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get interval => $composableBuilder(
+    column: $table.interval,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ProfilesTableFilterComposer get profileId {
+    final $$ProfilesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.profiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProfilesTableFilterComposer(
+            $db: $db,
+            $table: $db.profiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RouteRuleProvidersTableOrderingComposer
+    extends Composer<_$Database, $RouteRuleProvidersTable> {
+  $$RouteRuleProvidersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get behavior => $composableBuilder(
+    column: $table.behavior,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get interval => $composableBuilder(
+    column: $table.interval,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProfilesTableOrderingComposer get profileId {
+    final $$ProfilesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.profiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProfilesTableOrderingComposer(
+            $db: $db,
+            $table: $db.profiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RouteRuleProvidersTableAnnotationComposer
+    extends Composer<_$Database, $RouteRuleProvidersTable> {
+  $$RouteRuleProvidersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => column);
+
+  GeneratedColumn<String> get behavior =>
+      $composableBuilder(column: $table.behavior, builder: (column) => column);
+
+  GeneratedColumn<String> get format =>
+      $composableBuilder(column: $table.format, builder: (column) => column);
+
+  GeneratedColumn<int> get interval =>
+      $composableBuilder(column: $table.interval, builder: (column) => column);
+
+  $$ProfilesTableAnnotationComposer get profileId {
+    final $$ProfilesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.profiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProfilesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.profiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RouteRuleProvidersTableTableManager
+    extends
+        RootTableManager<
+          _$Database,
+          $RouteRuleProvidersTable,
+          RouteRuleProvider,
+          $$RouteRuleProvidersTableFilterComposer,
+          $$RouteRuleProvidersTableOrderingComposer,
+          $$RouteRuleProvidersTableAnnotationComposer,
+          $$RouteRuleProvidersTableCreateCompanionBuilder,
+          $$RouteRuleProvidersTableUpdateCompanionBuilder,
+          (RouteRuleProvider, $$RouteRuleProvidersTableReferences),
+          RouteRuleProvider,
+          PrefetchHooks Function({bool profileId})
+        > {
+  $$RouteRuleProvidersTableTableManager(
+    _$Database db,
+    $RouteRuleProvidersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RouteRuleProvidersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RouteRuleProvidersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RouteRuleProvidersTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> profileId = const Value.absent(),
+                Value<String> url = const Value.absent(),
+                Value<String> behavior = const Value.absent(),
+                Value<String> format = const Value.absent(),
+                Value<int> interval = const Value.absent(),
+              }) => RouteRuleProvidersCompanion(
+                id: id,
+                name: name,
+                profileId: profileId,
+                url: url,
+                behavior: behavior,
+                format: format,
+                interval: interval,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                required int profileId,
+                required String url,
+                required String behavior,
+                required String format,
+                required int interval,
+              }) => RouteRuleProvidersCompanion.insert(
+                id: id,
+                name: name,
+                profileId: profileId,
+                url: url,
+                behavior: behavior,
+                format: format,
+                interval: interval,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RouteRuleProvidersTable, RouteRuleProvider>(
+                    table,
+                  ),
+                  $$RouteRuleProvidersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({profileId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (profileId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.profileId,
+                                referencedTable:
+                                    $$RouteRuleProvidersTableReferences
+                                        ._profileIdTable(db),
+                                referencedColumn:
+                                    $$RouteRuleProvidersTableReferences
+                                        ._profileIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RouteRuleProvidersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Database,
+      $RouteRuleProvidersTable,
+      RouteRuleProvider,
+      $$RouteRuleProvidersTableFilterComposer,
+      $$RouteRuleProvidersTableOrderingComposer,
+      $$RouteRuleProvidersTableAnnotationComposer,
+      $$RouteRuleProvidersTableCreateCompanionBuilder,
+      $$RouteRuleProvidersTableUpdateCompanionBuilder,
+      (RouteRuleProvider, $$RouteRuleProvidersTableReferences),
+      RouteRuleProvider,
+      PrefetchHooks Function({bool profileId})
+    >;
 
 class $DatabaseManager {
   final _$Database _db;
@@ -5945,6 +6942,8 @@ class $DatabaseManager {
       $$ProxyGroupsTableTableManager(_db, _db.proxyGroups);
   $$IconRecordsTableTableManager get iconRecords =>
       $$IconRecordsTableTableManager(_db, _db.iconRecords);
+  $$RouteRuleProvidersTableTableManager get routeRuleProviders =>
+      $$RouteRuleProvidersTableTableManager(_db, _db.routeRuleProviders);
 }
 
 mixin _$ProfilesDaoMixin on DatabaseAccessor<Database> {
@@ -6018,4 +7017,24 @@ class IconRecordsDaoManager {
   IconRecordsDaoManager(this._db);
   $$IconRecordsTableTableManager get iconRecords =>
       $$IconRecordsTableTableManager(_db.attachedDatabase, _db.iconRecords);
+}
+
+mixin _$RouteRuleProvidersDaoMixin on DatabaseAccessor<Database> {
+  $ProfilesTable get profiles => attachedDatabase.profiles;
+  $RouteRuleProvidersTable get routeRuleProviders =>
+      attachedDatabase.routeRuleProviders;
+  RouteRuleProvidersDaoManager get managers =>
+      RouteRuleProvidersDaoManager(this);
+}
+
+class RouteRuleProvidersDaoManager {
+  final _$RouteRuleProvidersDaoMixin _db;
+  RouteRuleProvidersDaoManager(this._db);
+  $$ProfilesTableTableManager get profiles =>
+      $$ProfilesTableTableManager(_db.attachedDatabase, _db.profiles);
+  $$RouteRuleProvidersTableTableManager get routeRuleProviders =>
+      $$RouteRuleProvidersTableTableManager(
+        _db.attachedDatabase,
+        _db.routeRuleProviders,
+      );
 }

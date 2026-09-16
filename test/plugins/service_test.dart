@@ -97,6 +97,14 @@ void main() {
       expect(sent['currentProfileName'], 'profile');
     });
 
+    test('start carries the selected profile identity', () async {
+      mockChannel((call) async => call.method == 'start');
+
+      expect(await Service().start(sharedState, profileId: 42), isTrue);
+      final sent = json.decode(calls.single.arguments as String);
+      expect(sent['currentProfileId'], 42);
+    });
+
     test('an absent start or stop result is treated as failure', () async {
       mockChannel((_) async => null);
 
@@ -144,10 +152,11 @@ void main() {
         onlyStatisticsProxy: true,
       );
 
-      expect(await Service().syncState(state), 'ok');
+      expect(await Service().syncState(state, profileId: 7), 'ok');
 
       final sent = json.decode(calls.single.arguments as String);
       expect(sent['currentProfileName'], 'profile');
+      expect(sent['currentProfileId'], 7);
       expect(sent['onlyStatisticsProxy'], isTrue);
     });
   });
