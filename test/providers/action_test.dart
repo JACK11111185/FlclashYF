@@ -77,7 +77,7 @@ void main() {
       );
 
       expect(prepared, contains('synthetic-password#fastup'));
-      expect(prepared, contains('mpw: rotated-mpw'));
+      expect(prepared, contains('mpw: "rotated-mpw"'));
       verify(() => core.decryptAgeConfig(source, 'AGE-SECRET-KEY-1')).called(1);
       verify(() => core.validateConfig(prepared)).called(1);
     });
@@ -126,8 +126,8 @@ void main() {
       expect(profile.label, 'Oppa fixture');
       expect(container.read(currentProfileIdProvider), profile.id);
       final content = await (await profile.file).readAsString();
-      expect(content, contains('type: oppa'));
-      expect(content, contains('password: synthetic-token'));
+      expect(content, contains('type: "oppa"'));
+      expect(content, contains('password: "synthetic-token"'));
       verify(() => core.validateConfig(any())).called(1);
     });
 
