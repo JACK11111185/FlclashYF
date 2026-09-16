@@ -1,6 +1,6 @@
 import 'package:yaml/yaml.dart';
 
-enum ProtocolEditPolicy { standard, oppa, readOnly }
+enum ProtocolEditPolicy { standard, readOnly }
 
 ProtocolEditPolicy protocolEditPolicyForYaml(String source) {
   try {
@@ -8,7 +8,6 @@ ProtocolEditPolicy protocolEditPolicyForYaml(String source) {
     if (document is! YamlMap) return ProtocolEditPolicy.standard;
     final proxies = document['proxies'];
     if (proxies is! YamlList) return ProtocolEditPolicy.standard;
-    var hasOppa = false;
     for (final proxy in proxies) {
       if (proxy is! YamlMap) continue;
       final type = proxy['type']?.toString().toLowerCase();
@@ -19,9 +18,8 @@ ProtocolEditPolicy protocolEditPolicyForYaml(String source) {
           password.contains('blackstone')) {
         return ProtocolEditPolicy.readOnly;
       }
-      if (type == 'oppa') hasOppa = true;
     }
-    return hasOppa ? ProtocolEditPolicy.oppa : ProtocolEditPolicy.standard;
+    return ProtocolEditPolicy.standard;
   } on Object {
     return ProtocolEditPolicy.standard;
   }

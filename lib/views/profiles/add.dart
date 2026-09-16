@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/age_key_generator.dart';
-import 'package:fl_clash/views/profiles/oppa_profile_dialog.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +16,13 @@ class AddProfileView extends ConsumerWidget {
 
   Future<void> _handleAddProfileFormFile(WidgetRef ref) async {
     unawaited(ref.read(profilesActionProvider.notifier).addProfileFormFile());
+  }
+
+  Future<void> _handleAddProfileFromClipboard(WidgetRef ref) async {
+    await globalState.safeRun(
+      ref.read(profilesActionProvider.notifier).addProfileFormClipboard,
+      silence: false,
+    );
   }
 
   Future<void> _toScan(WidgetRef ref) async {
@@ -50,18 +55,6 @@ class AddProfileView extends ConsumerWidget {
     }
   }
 
-  Future<void> _toAddOppa(WidgetRef ref) async {
-    final config = await dialogs.showCommonDialog<OppaProxyConfig>(
-      child: const OppaProfileDialog(),
-    );
-    if (config == null) return;
-    await globalState.loadingRun(
-      () => ref.read(profilesActionProvider.notifier).addOppaProfile(config),
-      tag: LoadingTag.profiles,
-      title: currentAppLocalizations.addProfile,
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
@@ -86,10 +79,9 @@ class AddProfileView extends ConsumerWidget {
           onTap: () => _toAdd(ref),
         ),
         ListItem(
-          leading: const Icon(Icons.security),
-          title: const Text('Oppa'),
-          subtitle: Text(appLocalizations.addProfile),
-          onTap: () => _toAddOppa(ref),
+          leading: const Icon(Icons.content_paste_sharp),
+          title: Text(appLocalizations.clipboardImport),
+          onTap: () => _handleAddProfileFromClipboard(ref),
         ),
       ],
     );

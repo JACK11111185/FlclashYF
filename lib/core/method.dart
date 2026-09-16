@@ -46,6 +46,7 @@ enum CoreMethod {
   generateAgeKeyPair,
   convertAgeSecretKeyToPublicKey,
   decryptAgeConfig,
+  convertUriSubscription,
 }
 
 class CoreMethodCall {

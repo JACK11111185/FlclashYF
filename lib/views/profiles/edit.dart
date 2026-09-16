@@ -9,7 +9,6 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/profiles/oppa_profile_dialog.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -147,19 +146,6 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     }
   }
 
-  Future<void> _editOppaProfile(String source) async {
-    final config = await globalState.safeRun<OppaProxyConfig>(
-      () async => OppaProxyConfig.fromYaml(source),
-      silence: false,
-    );
-    if (!mounted || config == null) return;
-    final updated = await dialogs.showCommonDialog<OppaProxyConfig>(
-      child: OppaProfileDialog(initial: config),
-    );
-    if (!mounted || updated == null) return;
-    _setEditedProfileData(updated.toYaml());
-  }
-
   void _setEditedProfileData(String data) {
     setState(() {
       _rawText = data;
@@ -188,9 +174,6 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
           'This protocol profile is read-only.',
           level: MessageLevel.warning,
         );
-        return;
-      case ProtocolEditPolicy.oppa:
-        await _editOppaProfile(_rawText!);
         return;
       case ProtocolEditPolicy.standard:
         break;

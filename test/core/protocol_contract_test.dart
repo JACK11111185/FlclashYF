@@ -149,6 +149,9 @@ class _RecordingCoreHandler extends CoreHandlerInterface {
       },
       CoreMethod.convertAgeSecretKeyToPublicKey => 'age1public',
       CoreMethod.decryptAgeConfig => 'mode: rule',
+      CoreMethod.convertUriSubscription => [
+        {'name': 'node', 'type': 'vless'},
+      ],
       CoreMethod.getMemory => 2048,
       CoreMethod.getGoroutineCount => 42,
       _ => '',
@@ -230,6 +233,7 @@ void main() {
     await handler.asyncTestDelay('https://example.com', 'DIRECT');
     await handler.clearEffect(42);
     await handler.validateConfig('mode: rule');
+    await handler.convertUriSubscription('vless://fixture');
     await handler.decryptAgeConfig('encrypted', 'AGE-SECRET-KEY-1');
     await handler.convertAgeSecretKeyToPublicKey('AGE-SECRET-KEY-1');
 
@@ -244,6 +248,7 @@ void main() {
     }
     expect(handler.calls[CoreMethod.clearEffect], 42);
     expect(handler.calls[CoreMethod.validateConfig], 'mode: rule');
+    expect(handler.calls[CoreMethod.convertUriSubscription], 'vless://fixture');
     expect(handler.calls[CoreMethod.changeProxy], {
       'group-name': 'GLOBAL',
       'proxy-name': 'DIRECT',

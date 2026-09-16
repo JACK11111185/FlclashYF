@@ -50,7 +50,28 @@ class ProfilesAction extends _$ProfilesAction {
         prepared = decrypted;
       }
     }
-    prepared = convertFastupSubscription(prepared);
+    final convertedFastup = convertFastupSubscription(prepared);
+    final isFastup = convertedFastup != prepared;
+    prepared = convertedFastup;
+    final yamlProxies = extractYamlProxies(prepared);
+    if (yamlProxies != null && !isFullYamlProfile(prepared)) {
+      final template = await rootBundle.loadString(
+        'assets/data/profile_template.yaml',
+      );
+      prepared = injectSubscriptionProxies(
+        template: template,
+        proxies: yamlProxies,
+      );
+    } else if (!isFastup && !isYamlProfile(prepared)) {
+      final proxies = await _core.convertUriSubscription(prepared);
+      final template = await rootBundle.loadString(
+        'assets/data/profile_template.yaml',
+      );
+      prepared = injectSubscriptionProxies(
+        template: template,
+        proxies: proxies,
+      );
+    }
     final message = await _core.validateConfigWithData(prepared);
     if (message.isNotEmpty) {
       throw MessageException(message);
@@ -96,12 +117,42 @@ class ProfilesAction extends _$ProfilesAction {
     }
   }
 
-  Future<void> addOppaProfile(OppaProxyConfig config) async {
-    final profile = await Profile.normal(label: config.name).saveFile(
-      Uint8List.fromList(utf8.encode(config.toYaml())),
-      prepare: prepareProfileConfig,
+  Future<void> addProfileFromClipboardContent(String content) async {
+    final value = content.trim();
+    if (value.isEmpty) {
+      throw const MessageException('Clipboard is empty');
+    }
+    final uri = Uri.tryParse(value);
+    if (!value.contains(RegExp(r'[\r\n]')) &&
+        uri != null &&
+        uri.hasAuthority &&
+        (uri.scheme == 'http' || uri.scheme == 'https')) {
+      await addProfileFormURL(value);
+      return;
+    }
+    final profile = await globalState.loadingRun(
+      () => Profile.normal(label: currentAppLocalizations.clipboardImport)
+          .saveFile(
+            Uint8List.fromList(utf8.encode(value)),
+            prepare: prepareProfileConfig,
+          ),
+      tag: LoadingTag.profiles,
+      title: currentAppLocalizations.addProfile,
     );
-    putProfile(profile);
+    if (profile != null) {
+      putProfile(profile);
+    }
+  }
+
+  Future<void> addProfileFormClipboard() async {
+    final data = await globalState.safeRun(
+      () => Clipboard.getData(Clipboard.kTextPlain),
+    );
+    final content = data?.text;
+    if (content == null || content.trim().isEmpty) {
+      throw const MessageException('Clipboard is empty');
+    }
+    await addProfileFromClipboardContent(content);
   }
 
   Future<void> addProfileFormFile() async {

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/oppa_yaml.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
@@ -82,7 +81,47 @@ void main() {
       verify(() => core.validateConfig(prepared)).called(1);
     });
 
-    test('leaves standard profile YAML unchanged before validation', () async {
+    test('wraps URI subscriptions in the built-in profile template', () async {
+      final core = _MockCoreHandlerInterface();
+      when(() => core.convertUriSubscription(any())).thenAnswer(
+        (_) async => [
+          {
+            'name': 'Pure fixture',
+            'type': 'vless',
+            'server': 'node.example',
+            'port': 443,
+            'uuid': '00112233-4455-6677-8899-aabbccddeeff#pure',
+            'network': 'ws',
+            'tls': true,
+            'alpn': ['http/1.1'],
+            'ws-opts': {'path': '/websocket'},
+          },
+        ],
+      );
+      when(() => core.validateConfig(any())).thenAnswer((_) async => '');
+      final container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+      const source =
+          'vless://00112233-4455-6677-8899-aabbccddeeff%23pure@node.example:443?type=ws#Pure';
+
+      final prepared = await action.prepareProfileConfig(source, null);
+
+      expect(
+        prepared,
+        contains('uuid: "00112233-4455-6677-8899-aabbccddeeff#pure"'),
+      );
+      expect(prepared, contains('name: "🚀 节点选择"'));
+      expect(prepared, contains('name: "⚡ 自动优选"'));
+      verify(() => core.convertUriSubscription(source)).called(1);
+      verify(() => core.validateConfig(prepared)).called(1);
+    });
+
+    test('wraps proxies-only YAML in the built-in profile template', () async {
       final core = _MockCoreHandlerInterface();
       when(() => core.validateConfig(any())).thenAnswer((_) async => '');
       final container = ProviderContainer(
@@ -96,39 +135,29 @@ void main() {
 
       final prepared = await action.prepareProfileConfig(source, null);
 
-      expect(prepared, source);
-      verify(() => core.validateConfig(source)).called(1);
+      expect(prepared, contains('name: "standard"'));
+      expect(prepared, contains('name: "🚀 节点选择"'));
+      expect(prepared, contains('name: "⚡ 自动优选"'));
+      verify(() => core.validateConfig(prepared)).called(1);
     });
 
-    test('stores an Oppa profile as validated YAML', () async {
+    test('leaves complete profile YAML unchanged before validation', () async {
       final core = _MockCoreHandlerInterface();
       when(() => core.validateConfig(any())).thenAnswer((_) async => '');
       final container = ProviderContainer(
         overrides: [
-          currentProfileIdProvider.overrideWithBuild((_, _) => null),
           coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-          profilesProvider.overrideWith(() => TestProfiles([])),
         ],
       );
       addTearDown(container.dispose);
       final action = container.read(profilesActionProvider.notifier);
+      const source =
+          'mode: rule\nproxies:\n  - {name: standard, type: vless}\nproxy-groups:\n  - {name: GLOBAL, type: select, proxies: [standard]}\nrules:\n  - MATCH,GLOBAL\n';
 
-      await action.addOppaProfile(
-        const OppaProxyConfig(
-          name: 'Oppa fixture',
-          server: 'node.example',
-          port: 443,
-          password: 'synthetic-token',
-        ),
-      );
+      final prepared = await action.prepareProfileConfig(source, null);
 
-      final profile = container.read(profilesProvider).single;
-      expect(profile.label, 'Oppa fixture');
-      expect(container.read(currentProfileIdProvider), profile.id);
-      final content = await (await profile.file).readAsString();
-      expect(content, contains('type: "oppa"'));
-      expect(content, contains('password: "synthetic-token"'));
-      verify(() => core.validateConfig(any())).called(1);
+      expect(prepared, source);
+      verify(() => core.validateConfig(source)).called(1);
     });
 
     test('keeps edited profile data when remote update fails', () async {

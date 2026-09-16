@@ -72,7 +72,8 @@ problems-report.html
 /env.json
 /core_sha256.json
 /core/*.exe
-/assets/data/
+/assets/data/*
+!/assets/data/profile_template.yaml
 /plugins/rust_api/.claude/
 /ios/Flutter/GeneratedBundleConfig.xcconfig
 /issue-triage/

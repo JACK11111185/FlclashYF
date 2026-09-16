@@ -80,7 +80,7 @@ jobs:
           flutter pub get
           dart format --output=none --set-exit-if-changed lib test setup.dart
           flutter analyze --no-fatal-infos
-          flutter test test/common/fastup_subscription_test.dart test/common/oppa_yaml_test.dart test/common/protocol_edit_policy_test.dart test/providers/action_test.dart
+          flutter test test/common/fastup_subscription_test.dart test/common/protocol_edit_policy_test.dart test/common/uri_subscription_test.dart test/core/protocol_contract_test.dart test/providers/action_test.dart
 
       - name: Verify iOS sideload asset
         run: |

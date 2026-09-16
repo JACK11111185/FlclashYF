@@ -2,10 +2,10 @@ import 'package:fl_clash/common/protocol_edit_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Oppa is editable and XHTTP/BLACKSTONE are read-only', () {
+  test('Oppa keeps the standard editor and XHTTP/BLACKSTONE are read-only', () {
     expect(
       protocolEditPolicyForYaml('proxies:\n  - {name: o, type: oppa}'),
-      ProtocolEditPolicy.oppa,
+      ProtocolEditPolicy.standard,
     );
     expect(
       protocolEditPolicyForYaml(
