@@ -50,7 +50,8 @@ class ProfilesAction extends _$ProfilesAction {
         prepared = decrypted;
       }
     }
-    final message = await _core.validateConfig(prepared);
+    prepared = convertFastupSubscription(prepared);
+    final message = await _core.validateConfigWithData(prepared);
     if (message.isNotEmpty) {
       throw MessageException(message);
     }
@@ -93,6 +94,14 @@ class ProfilesAction extends _$ProfilesAction {
             .stop(profile.updatingKey, operation);
       }
     }
+  }
+
+  Future<void> addOppaProfile(OppaProxyConfig config) async {
+    final profile = await Profile.normal(label: config.name).saveFile(
+      Uint8List.fromList(utf8.encode(config.toYaml())),
+      prepare: prepareProfileConfig,
+    );
+    putProfile(profile);
   }
 
   Future<void> addProfileFormFile() async {

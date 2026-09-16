@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:fl_clash/common/oppa_yaml.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
@@ -13,14 +15,122 @@ import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:riverpod/riverpod.dart';
 
 import '../helpers/test_profiles.dart';
 
 class _MockCoreHandlerInterface extends Mock implements CoreHandlerInterface {}
 
+class _FakePathProvider extends PathProviderPlatform {
+  _FakePathProvider(this.root);
+
+  final String root;
+
+  @override
+  Future<String?> getTemporaryPath() async => root;
+
+  @override
+  Future<String?> getApplicationSupportPath() async => root;
+
+  @override
+  Future<String?> getApplicationCachePath() async => root;
+}
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late Directory tempDir;
+
+  setUpAll(() {
+    tempDir = Directory.systemTemp.createTempSync('profiles_action_test');
+    PathProviderPlatform.instance = _FakePathProvider(tempDir.path);
+  });
+
+  tearDownAll(() {
+    try {
+      tempDir.deleteSync(recursive: true);
+    } catch (_) {}
+  });
+
   group('ProfilesAction', () {
+    test('prepares Fastup subscriptions before Core validation', () async {
+      final core = _MockCoreHandlerInterface();
+      when(
+        () => core.decryptAgeConfig(any(), any()),
+      ).thenAnswer((invocation) async => invocation.positionalArguments.first);
+      when(() => core.validateConfig(any())).thenAnswer((_) async => '');
+      final container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+      const source = '''
+{"outbounds":[{"type":"trojan","tag":"Fastup fixture","server":"node.example","server_port":443,"password":"synthetic-password","mpw":"rotated-mpw"}]}
+''';
+
+      final prepared = await action.prepareProfileConfig(
+        source,
+        'AGE-SECRET-KEY-1',
+      );
+
+      expect(prepared, contains('synthetic-password#fastup'));
+      expect(prepared, contains('mpw: rotated-mpw'));
+      verify(() => core.decryptAgeConfig(source, 'AGE-SECRET-KEY-1')).called(1);
+      verify(() => core.validateConfig(prepared)).called(1);
+    });
+
+    test('leaves standard profile YAML unchanged before validation', () async {
+      final core = _MockCoreHandlerInterface();
+      when(() => core.validateConfig(any())).thenAnswer((_) async => '');
+      final container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+      const source = 'proxies:\n  - {name: standard, type: vless}\n';
+
+      final prepared = await action.prepareProfileConfig(source, null);
+
+      expect(prepared, source);
+      verify(() => core.validateConfig(source)).called(1);
+    });
+
+    test('stores an Oppa profile as validated YAML', () async {
+      final core = _MockCoreHandlerInterface();
+      when(() => core.validateConfig(any())).thenAnswer((_) async => '');
+      final container = ProviderContainer(
+        overrides: [
+          currentProfileIdProvider.overrideWithBuild((_, _) => null),
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          profilesProvider.overrideWith(() => TestProfiles([])),
+        ],
+      );
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+
+      await action.addOppaProfile(
+        const OppaProxyConfig(
+          name: 'Oppa fixture',
+          server: 'node.example',
+          port: 443,
+          password: 'synthetic-token',
+        ),
+      );
+
+      final profile = container.read(profilesProvider).single;
+      expect(profile.label, 'Oppa fixture');
+      expect(container.read(currentProfileIdProvider), profile.id);
+      final content = await (await profile.file).readAsString();
+      expect(content, contains('type: oppa'));
+      expect(content, contains('password: synthetic-token'));
+      verify(() => core.validateConfig(any())).called(1);
+    });
+
     test('keeps edited profile data when remote update fails', () async {
       final original = Profile.normal(label: 'old label', url: 'bad-url');
       final edited = original.copyWith(
