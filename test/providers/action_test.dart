@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:fl_clash/common/exception.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:fl_clash/core/interface.dart';
@@ -53,6 +54,100 @@ void main() {
   });
 
   group('ProfilesAction', () {
+    test('loads the built-in template through the action', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+
+      expect(await action.loadProfileTemplate(), contains('mode: rule'));
+    });
+
+    test('uses a saved template for URI subscriptions', () async {
+      final core = _MockCoreHandlerInterface();
+      when(
+        () => core.validateConfigWithData(any()),
+      ).thenAnswer((_) async => '');
+      when(() => core.convertUriSubscription(any())).thenAnswer(
+        (_) async => [
+          {'name': 'URI fixture', 'type': 'direct'},
+        ],
+      );
+      final container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+      await action.saveProfileTemplate(
+        'mode: global\ncustom-marker: uri\nproxies: []\n',
+      );
+      addTearDown(action.resetProfileTemplate);
+
+      final prepared = await action.prepareProfileConfig('ss://fixture', null);
+
+      expect(prepared, contains('custom-marker: uri'));
+      expect(prepared, contains('name: "URI fixture"'));
+    });
+
+    test('uses a saved template for proxies-only YAML', () async {
+      final core = _MockCoreHandlerInterface();
+      when(
+        () => core.validateConfigWithData(any()),
+      ).thenAnswer((_) async => '');
+      final container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+      await action.saveProfileTemplate(
+        'mode: global\ncustom-marker: yaml\nproxies: []\n',
+      );
+      addTearDown(action.resetProfileTemplate);
+
+      final prepared = await action.prepareProfileConfig(
+        'proxies:\n  - {name: YAML fixture, type: direct}\n',
+        null,
+      );
+
+      expect(prepared, contains('custom-marker: yaml'));
+      expect(prepared, contains('name: "YAML fixture"'));
+    });
+
+    test('invalid save preserves the effective template', () async {
+      final core = _MockCoreHandlerInterface();
+      when(() => core.validateConfigWithData(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first == 'mode: invalid\n'
+            ? 'invalid template'
+            : '',
+      );
+      final container = ProviderContainer(
+        overrides: [
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final action = container.read(profilesActionProvider.notifier);
+      await action.saveProfileTemplate('mode: global\nproxies: []\n');
+      addTearDown(action.resetProfileTemplate);
+
+      await expectLater(
+        action.saveProfileTemplate('mode: invalid\n'),
+        throwsA(
+          isA<MessageException>().having(
+            (error) => error.message,
+            'message',
+            'invalid template',
+          ),
+        ),
+      );
+
+      expect(await action.loadProfileTemplate(), 'mode: global\nproxies: []\n');
+    });
+
     test('prepares Fastup subscriptions before Core validation', () async {
       final core = _MockCoreHandlerInterface();
       when(

@@ -39,6 +39,18 @@ class ProfilesAction extends _$ProfilesAction {
     return _core.validateConfigWithData(data);
   }
 
+  Future<String> loadProfileTemplate() {
+    return profileTemplateStore.load();
+  }
+
+  Future<void> saveProfileTemplate(String content) {
+    return profileTemplateStore.save(content, _core.validateConfigWithData);
+  }
+
+  Future<void> resetProfileTemplate() {
+    return profileTemplateStore.reset();
+  }
+
   Future<String> prepareProfileConfig(
     String content,
     String? ageSecretKey,
@@ -55,18 +67,14 @@ class ProfilesAction extends _$ProfilesAction {
     prepared = convertedFastup;
     final yamlProxies = extractYamlProxies(prepared);
     if (yamlProxies != null && !isFullYamlProfile(prepared)) {
-      final template = await rootBundle.loadString(
-        'assets/data/profile_template.yaml',
-      );
+      final template = await loadProfileTemplate();
       prepared = injectSubscriptionProxies(
         template: template,
         proxies: yamlProxies,
       );
     } else if (!isFastup && !isYamlProfile(prepared)) {
       final proxies = await _core.convertUriSubscription(prepared);
-      final template = await rootBundle.loadString(
-        'assets/data/profile_template.yaml',
-      );
+      final template = await loadProfileTemplate();
       prepared = injectSubscriptionProxies(
         template: template,
         proxies: proxies,
