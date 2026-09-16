@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/age_key_generator.dart';
 import 'package:fl_clash/views/profiles/oppa_profile_dialog.dart';
 import 'package:fl_clash/widgets/widgets.dart';
