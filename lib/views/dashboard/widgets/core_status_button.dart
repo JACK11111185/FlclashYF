@@ -8,6 +8,10 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'paper_plane_status_icon.dart';
+
+export 'paper_plane_status_icon.dart';
+
 class CoreStatusButton extends ConsumerStatefulWidget {
   const CoreStatusButton({super.key});
 
@@ -122,7 +126,9 @@ class _CoreStatusButtonState extends ConsumerState<CoreStatusButton> {
                 ),
               ),
               CoreStatus.connected ||
-              CoreStatus.disconnected => const Icon(Icons.send_rounded),
+              CoreStatus.disconnected => PaperPlaneStatusIcon(
+                disconnected: coreStatus == CoreStatus.disconnected,
+              ),
             },
           ),
         ),
