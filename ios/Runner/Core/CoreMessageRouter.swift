@@ -82,6 +82,11 @@ final class CoreMessageRouter {
     notificationCoordinator.setDesiredRoute(currentRoute)
   }
 
+  func refreshTunnelState() async {
+    let active = await tunnelController.isCoreActive()
+    updateTunnelState(active ? .running : .stopped)
+  }
+
   func invoke(_ data: Data) async -> String {
     let method = methodCallName(data)
     let action = notificationCoordinator.action(for: data)

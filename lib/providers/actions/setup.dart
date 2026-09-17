@@ -504,6 +504,8 @@ class SetupAction extends _$SetupAction {
     final yamlString = realProfile?.yaml ?? '';
     final yamlMd5 = realProfile?.md5 ?? '';
     if (!profileFailed && yamlMd5 == globalState.lastConfigMd5 && !force) {
+      await preloadInvoke?.call();
+      await onUpdated?.call();
       return _SetupTaskResult.completed;
     }
     if (system.isAndroid) {
