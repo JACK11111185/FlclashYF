@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/pages/scan.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/views/profiles/age_key_generator.dart';
 import 'package:fl_clash/views/profiles/clipboard_import_dialog.dart';
@@ -13,8 +18,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddProfileView extends ConsumerWidget {
   final BuildContext context;
+  final BuildContext? editorContext;
 
-  const AddProfileView({super.key, required this.context});
+  const AddProfileView({super.key, required this.context, this.editorContext});
 
   Future<void> _handleAddProfileFormFile(WidgetRef ref) async {
     unawaited(ref.read(profilesActionProvider.notifier).addProfileFormFile());
@@ -66,6 +72,71 @@ class AddProfileView extends ConsumerWidget {
     }
   }
 
+  Future<void> _createProfile(BuildContext context, WidgetRef ref) async {
+    final appLocalizations = context.appLocalizations;
+    final profilesAction = ref.read(profilesActionProvider.notifier);
+    final name = await dialogs.showCommonDialog<String>(
+      child: InputDialog(
+        title: appLocalizations.newProfile,
+        value: '',
+        labelText: appLocalizations.name,
+        inputFormatters: TextInputLimits.limit(TextInputLimits.name),
+        validator: (value) => value == null || value.trim().isEmpty
+            ? appLocalizations.profileNameNullValidationDesc
+            : null,
+      ),
+    );
+    if (name == null || !context.mounted) return;
+    final navigationContext = editorContext ?? context;
+    if (!navigationContext.mounted) return;
+    if (editorContext != null) {
+      Navigator.of(context).pop();
+    }
+    final profile = Profile.normal(label: name.trim());
+    var saving = false;
+
+    Future<void> save(BuildContext editorContext, String content) async {
+      if (saving) return;
+      saving = true;
+      try {
+        final saved = await globalState.safeRun(
+          () => profile.saveFile(
+            Uint8List.fromList(utf8.encode(content)),
+            prepare: profilesAction.prepareProfileConfig,
+          ),
+          title: appLocalizations.newProfile,
+        );
+        if (saved == null) return;
+        profilesAction.putProfile(saved);
+        if (editorContext.mounted) {
+          Navigator.of(editorContext).pop();
+        }
+      } finally {
+        saving = false;
+      }
+    }
+
+    await BaseNavigator.push<void>(
+      navigationContext,
+      EditorPage(
+        title: profile.label,
+        content: '',
+        onSave: (context, _, content) => save(context, content),
+        onPop: (context, _, content) async {
+          if (saving) return false;
+          if (content.isEmpty) return true;
+          final result = await dialogs.showMessage(
+            title: profile.label,
+            message: TextSpan(text: appLocalizations.hasCacheChange),
+          );
+          if (result != true) return true;
+          if (context.mounted) await save(context, content);
+          return false;
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
@@ -76,6 +147,12 @@ class AddProfileView extends ConsumerWidget {
           title: Text(appLocalizations.qrcode),
           subtitle: Text(appLocalizations.qrcodeDesc),
           onTap: () => _toScan(ref),
+        ),
+        ListItem(
+          leading: const Icon(Icons.note_add_sharp),
+          title: Text(appLocalizations.newProfile),
+          subtitle: Text(appLocalizations.newProfileDesc),
+          onTap: () => _createProfile(context, ref),
         ),
         ListItem(
           leading: const Icon(Icons.upload_file_outlined),

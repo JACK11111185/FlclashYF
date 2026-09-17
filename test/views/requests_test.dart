@@ -172,7 +172,7 @@ void main() {
     final label = tester.widget<Text>(
       find.descendant(of: find.byKey(hintKey), matching: find.byType(Text)),
     );
-    expect(label.data, requests.last.start.showFull);
+    expect(label.data, requests.last.start.toLocal().showFull);
     // The hint is pinned to the thumb: at the newest end the thumb center
     // rests 24px (half the 48px minimum thumb) below the track's top edge.
     expect(

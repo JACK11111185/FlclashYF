@@ -755,10 +755,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkType": MessageLookupByLibrary.simpleMessage("ネットワーク種別"),
     "networking": MessageLookupByLibrary.simpleMessage("メッシュネットワーク"),
     "networkingDesc": MessageLookupByLibrary.simpleMessage("P2P ネットワークの状態を表示"),
+    "networkingError": MessageLookupByLibrary.simpleMessage("エラー"),
     "networkingNoOutbounds": MessageLookupByLibrary.simpleMessage(
       "現在の設定に P2P アウトバウンドはありません",
     ),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("ニュートラル"),
+    "newProfile": MessageLookupByLibrary.simpleMessage("新規作成"),
+    "newProfileDesc": MessageLookupByLibrary.simpleMessage("プロファイルを手動で作成"),
     "nextMatch": MessageLookupByLibrary.simpleMessage("次の一致"),
     "noData": MessageLookupByLibrary.simpleMessage("データがありません"),
     "noFilterCondition": MessageLookupByLibrary.simpleMessage("フィルター条件なし"),

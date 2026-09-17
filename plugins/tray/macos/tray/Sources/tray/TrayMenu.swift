@@ -59,10 +59,16 @@ private final class TrayMenuItemView: NSView {
         static let height: CGFloat = 24
         static let minimumWidth: CGFloat = 270
         static let maximumWidth: CGFloat = 520
-        static let stateImageLeading: CGFloat = 9
+        static let stateImageLeading: CGFloat = 12
         static let stateImageWidth: CGFloat = 12
         static let stateImageHeight: CGFloat = 11
-        static let titleLeading: CGFloat = 21
+        static let stateImageTitleSpacing: CGFloat = 3
+        static let titleTextInset: CGFloat = 2
+        static let titleLeading: CGFloat = {
+            ProcessInfo.processInfo.operatingSystemVersion.majorVersion >= 26
+                ? 14
+                : 12
+        }()
         static let titleBadgeSpacing: CGFloat = 12
         static let trailing: CGFloat = 16
         static let badgeHeight: CGFloat = 16
@@ -87,6 +93,7 @@ private final class TrayMenuItemView: NSView {
     private var keepsMenuOpen: Bool
     private var hasSubmenu: Bool
     private var reservesSubmenuColumn = false
+    private var reservesStateColumn = false
     private var pointerInside = false
     private var trackingAreaReference: NSTrackingArea?
 
@@ -197,11 +204,16 @@ private final class TrayMenuItemView: NSView {
         )
         drawingView.frame = bounds
 
-        checkmarkView.frame = NSRect(
-            x: Metrics.stateImageLeading,
-            y: floor((bounds.height - Metrics.stateImageHeight) / 2),
+        let stateImageSize = checkmarkView.image?.size ?? NSSize(
             width: Metrics.stateImageWidth,
             height: Metrics.stateImageHeight
+        )
+        checkmarkView.frame = NSRect(
+            x: titleLeading - Metrics.titleTextInset
+                - stateImageSize.width - Metrics.stateImageTitleSpacing,
+            y: floor((bounds.height - stateImageSize.height) / 2),
+            width: stateImageSize.width,
+            height: stateImageSize.height
         )
         submenuIndicatorView.frame = NSRect(
             x: bounds.width - Metrics.trailing - Metrics.submenuIndicatorWidth,
@@ -222,7 +234,7 @@ private final class TrayMenuItemView: NSView {
             Metrics.maximumWidth,
             max(
                 Metrics.minimumWidth,
-                Metrics.titleLeading
+                titleLeading
                     + titleWidth
                     + sublabelWidth
                     + submenuColumnWidth
@@ -349,6 +361,27 @@ private final class TrayMenuItemView: NSView {
         refresh()
     }
 
+    fileprivate func setReservesStateColumn(_ reserves: Bool) {
+        guard reservesStateColumn != reserves else {
+            return
+        }
+        reservesStateColumn = reserves
+        invalidateIntrinsicContentSize()
+        refresh()
+    }
+
+    private var titleLeading: CGFloat {
+        guard reservesStateColumn else {
+            return Metrics.titleLeading + Metrics.titleTextInset
+        }
+        let stateImageWidth = max(
+            Metrics.stateImageWidth,
+            checkmarkView.image?.size.width ?? 0
+        )
+        return Metrics.stateImageLeading + stateImageWidth
+            + Metrics.stateImageTitleSpacing + Metrics.titleTextInset
+    }
+
     private func drawContent() {
         guard let menuItem = enclosingMenuItem else {
             return
@@ -417,9 +450,9 @@ private final class TrayMenuItemView: NSView {
                 - submenuColumnWidth
         )
         let titleRect = NSRect(
-            x: Metrics.titleLeading,
+            x: titleLeading,
             y: (bounds.height - textHeight) / 2,
-            width: max(0, titleTrailing - Metrics.titleLeading),
+            width: max(0, titleTrailing - titleLeading),
             height: textHeight
         )
         (label as NSString).draw(in: titleRect, withAttributes: attributes)
@@ -433,7 +466,7 @@ private final class TrayMenuItemView: NSView {
         let maximumWidth = max(
             0,
             bounds.width
-                - Metrics.titleLeading
+                - titleLeading
                 - Metrics.minimumTitleWidth
                 - Metrics.titleBadgeSpacing
                 - trailing
@@ -885,10 +918,24 @@ final class TrayMenu: NSMenu {
     }
 
     private func updateCustomViewWidths(_ customViews: [TrayMenuItemView]) {
+        let reservesStateColumn = items.contains { item in
+            guard !item.isHidden && !item.isSeparatorItem else {
+                return false
+            }
+            switch item.state {
+            case .on:
+                return item.onStateImage != nil
+            case .mixed:
+                return item.mixedStateImage != nil
+            default:
+                return item.offStateImage != nil
+            }
+        }
         let reservesSubmenuColumn = customViews.contains {
             $0.containsSubmenuIndicator
         }
         for view in customViews {
+            view.setReservesStateColumn(reservesStateColumn)
             view.setReservesSubmenuColumn(reservesSubmenuColumn)
         }
         let width = customViews.map(\.preferredWidth).max() ?? 0

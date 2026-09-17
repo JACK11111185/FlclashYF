@@ -35,12 +35,13 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
   }
 
   void _handleShowAddExtendPage() {
-    final context = globalState.navigatorKey.currentState!.context;
+    final pageContext = context;
+    final navigatorContext = globalState.navigatorKey.currentState!.context;
     showExtend(
-      context,
+      navigatorContext,
       builder: (context) => AdaptiveSheetScaffold(
         title: context.appLocalizations.addProfile,
-        body: AddProfileView(context: context),
+        body: AddProfileView(context: context, editorContext: pageContext),
       ),
     );
   }

@@ -121,7 +121,15 @@ void main() {
     expect(menuSource, contains('weight: .bold'));
     expect(menuSource, contains('scale: .small'));
     expect(menuSource, contains('static let stateImageHeight: CGFloat = 11'));
-    expect(menuSource, contains('static let titleLeading: CGFloat = 21'));
+    expect(menuSource, contains('static let stateImageLeading: CGFloat = 12'));
+    expect(
+      menuSource,
+      contains('static let stateImageTitleSpacing: CGFloat = 3'),
+    );
+    expect(
+      menuSource,
+      contains('let stateImageSize = checkmarkView.image?.size'),
+    );
     expect(menuSource, contains('static let trailing: CGFloat = 16'));
     expect(
       menuSource,

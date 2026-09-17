@@ -946,10 +946,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkingDesc": MessageLookupByLibrary.simpleMessage(
       "Просмотр состояния P2P-сетей",
     ),
+    "networkingError": MessageLookupByLibrary.simpleMessage("Ошибка"),
     "networkingNoOutbounds": MessageLookupByLibrary.simpleMessage(
       "В текущей конфигурации нет исходящих P2P-подключений",
     ),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("Нейтральная"),
+    "newProfile": MessageLookupByLibrary.simpleMessage("Новый"),
+    "newProfileDesc": MessageLookupByLibrary.simpleMessage(
+      "Создать профиль вручную",
+    ),
     "nextMatch": MessageLookupByLibrary.simpleMessage("Следующее совпадение"),
     "noData": MessageLookupByLibrary.simpleMessage("Нет данных"),
     "noFilterCondition": MessageLookupByLibrary.simpleMessage(

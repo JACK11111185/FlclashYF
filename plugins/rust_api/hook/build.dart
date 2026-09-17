@@ -41,6 +41,8 @@ Map<String, String> _bindgenEnvironment(BuildInput input) {
     final sdkPath = xcrun(['--show-sdk-path']);
     final clang = xcrun(['--find', 'clang']);
     return {
+      // Rust stripping can misalign Mach-O LINKEDIT (rust-lang/rust#157750).
+      'CARGO_PROFILE_RELEASE_STRIP': 'none',
       'LIBCLANG_PATH': '${File(clang).parent.parent.path}/lib',
       'BINDGEN_EXTRA_CLANG_ARGS': '-isysroot "$sdkPath"',
       'IPHONEOS_DEPLOYMENT_TARGET': '${code.iOS.targetVersion}.0',

@@ -685,6 +685,21 @@ class AppLocalizations {
     );
   }
 
+  /// `New`
+  String get newProfile {
+    return Intl.message('New', name: 'newProfile', desc: '', args: []);
+  }
+
+  /// `Write a profile manually`
+  String get newProfileDesc {
+    return Intl.message(
+      'Write a profile manually',
+      name: 'newProfileDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Create`
   String get create {
     return Intl.message('Create', name: 'create', desc: '', args: []);
@@ -6388,6 +6403,11 @@ class AppLocalizations {
   /// `Networking`
   String get networking {
     return Intl.message('Networking', name: 'networking', desc: '', args: []);
+  }
+
+  /// `Error`
+  String get networkingError {
+    return Intl.message('Error', name: 'networkingError', desc: '', args: []);
   }
 
   /// `View status of P2P networks`

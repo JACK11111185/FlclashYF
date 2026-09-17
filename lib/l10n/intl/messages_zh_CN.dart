@@ -661,10 +661,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkType": MessageLookupByLibrary.simpleMessage("网络类型"),
     "networking": MessageLookupByLibrary.simpleMessage("组网"),
     "networkingDesc": MessageLookupByLibrary.simpleMessage("查看点对点组网状态"),
+    "networkingError": MessageLookupByLibrary.simpleMessage("错误"),
     "networkingNoOutbounds": MessageLookupByLibrary.simpleMessage(
       "当前配置中没有点对点组网出站",
     ),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("中性"),
+    "newProfile": MessageLookupByLibrary.simpleMessage("新建"),
+    "newProfileDesc": MessageLookupByLibrary.simpleMessage("手动编写配置文件"),
     "nextMatch": MessageLookupByLibrary.simpleMessage("下一个匹配"),
     "noData": MessageLookupByLibrary.simpleMessage("暂无数据"),
     "noFilterCondition": MessageLookupByLibrary.simpleMessage("暂无筛选条件"),
