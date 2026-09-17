@@ -1,30 +1,9 @@
+export 'package:fl_clash/models/clipboard_import.dart';
+
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/models/clipboard_import.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
-
-const _clipboardImportKindLabels = {
-  ClipboardImportKind.url: 'URL',
-  ClipboardImportKind.yaml: 'YAML',
-  ClipboardImportKind.uri: 'URI',
-  ClipboardImportKind.base64: 'Base64',
-  ClipboardImportKind.json: 'JSON',
-};
-
-enum ClipboardImportKind { url, yaml, uri, base64, json }
-
-class ClipboardImportPreview {
-  const ClipboardImportPreview({
-    required this.kind,
-    required this.source,
-    required this.suggestedName,
-    this.nodeCount,
-  });
-
-  final ClipboardImportKind kind;
-  final String source;
-  final int? nodeCount;
-  final String suggestedName;
-}
 
 class ClipboardImportDialog extends StatefulWidget {
   const ClipboardImportDialog({
@@ -148,7 +127,7 @@ class _ClipboardImportDialogState extends State<ClipboardImportDialog> {
               if (_loading) const Center(child: CircularProgressIndicator()),
               if (preview != null) ...[
                 Text(
-                  '${_clipboardImportKindLabels[preview.kind]} · ${preview.source}',
+                  '${clipboardImportKindLabels[preview.kind]} · ${preview.source}',
                 ),
                 if (preview.nodeCount case final count?)
                   Text('${l10n.nodes}: $count'),

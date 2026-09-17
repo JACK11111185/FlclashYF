@@ -164,9 +164,10 @@ class RouteView extends ConsumerWidget {
       return;
     }
     final parsed = classifyRouteInput(input.text)!;
-    if (parsed.url != null) {
+    final RouteInput routeInput = parsed;
+    if (routeInput.url != null) {
       final name = providerName.text.trim().isEmpty
-          ? Uri.parse(parsed.url!).host.replaceAll('.', '-')
+          ? Uri.parse(routeInput.url!).host.replaceAll('.', '-')
           : providerName.text.trim();
       await ref
           .read(routeStoreProvider(profileId))
@@ -175,7 +176,7 @@ class RouteView extends ConsumerWidget {
               id: snowflake.id,
               name: name,
               profileId: profileId,
-              url: parsed.url!,
+              url: routeInput.url!,
               behavior: 'domain',
               format: 'yaml',
               interval: 86400,
@@ -197,8 +198,8 @@ class RouteView extends ConsumerWidget {
           .putRule(
             Rule(
               id: snowflake.id,
-              ruleAction: parsed.action!,
-              content: parsed.content,
+              ruleAction: routeInput.action!,
+              content: routeInput.content,
               ruleTarget: target.text.trim(),
             ),
           );
