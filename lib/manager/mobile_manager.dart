@@ -57,10 +57,7 @@ class _MobileManagerState extends ConsumerState<MobileManager>
   }
 
   void _syncSharedState(SharedState state) {
-    service?.syncState(
-      state,
-      profileId: ref.read(currentProfileIdProvider),
-    );
+    service?.syncState(state, profileId: ref.read(currentProfileIdProvider));
   }
 
   void _reloadPackages() {
