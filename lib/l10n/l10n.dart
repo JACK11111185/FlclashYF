@@ -6749,6 +6749,56 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Separate multiple targets with commas or new lines`
+  String get routeInputHelp {
+    return Intl.message(
+      'Separate multiple targets with commas or new lines',
+      name: 'routeInputHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manual selection`
+  String get routeGroupManual {
+    return Intl.message(
+      'Manual selection',
+      name: 'routeGroupManual',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Automatic selection`
+  String get routeGroupAuto {
+    return Intl.message(
+      'Automatic selection',
+      name: 'routeGroupAuto',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Load balancing`
+  String get routeGroupBalance {
+    return Intl.message(
+      'Load balancing',
+      name: 'routeGroupBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Health check interval`
+  String get routeHealthInterval {
+    return Intl.message(
+      'Health check interval',
+      name: 'routeHealthInterval',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

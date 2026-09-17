@@ -984,8 +984,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeAddressDesc": MessageLookupByLibrary.simpleMessage(
       "リッスンするルートアドレスを設定します",
     ),
+    "routeGroupAuto": MessageLookupByLibrary.simpleMessage("自動選択"),
+    "routeGroupBalance": MessageLookupByLibrary.simpleMessage("負荷分散"),
+    "routeGroupManual": MessageLookupByLibrary.simpleMessage("手動選択"),
     "routeGroupType": MessageLookupByLibrary.simpleMessage("グループタイプ"),
     "routeGroups": MessageLookupByLibrary.simpleMessage("ルートグループ"),
+    "routeHealthInterval": MessageLookupByLibrary.simpleMessage("ヘルスチェック間隔"),
+    "routeInputHelp": MessageLookupByLibrary.simpleMessage(
+      "複数の対象は半角コンマまたは改行で区切ります",
+    ),
     "routeInputHint": MessageLookupByLibrary.simpleMessage(
       "ドメイン、IP、CIDR、またはルールセット URL",
     ),

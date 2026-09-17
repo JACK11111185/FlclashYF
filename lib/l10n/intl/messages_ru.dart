@@ -775,9 +775,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Введите содержимое правила",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),
@@ -1241,8 +1242,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeAddressDesc": MessageLookupByLibrary.simpleMessage(
       "Настроить прослушиваемые адреса маршрутов",
     ),
+    "routeGroupAuto": MessageLookupByLibrary.simpleMessage("Автовыбор"),
+    "routeGroupBalance": MessageLookupByLibrary.simpleMessage("Балансировка"),
+    "routeGroupManual": MessageLookupByLibrary.simpleMessage("Ручной выбор"),
     "routeGroupType": MessageLookupByLibrary.simpleMessage("Тип группы"),
     "routeGroups": MessageLookupByLibrary.simpleMessage("Группы маршрутизации"),
+    "routeHealthInterval": MessageLookupByLibrary.simpleMessage(
+      "Интервал проверки",
+    ),
+    "routeInputHelp": MessageLookupByLibrary.simpleMessage(
+      "Разделяйте несколько целей запятыми или переносами строк",
+    ),
     "routeInputHint": MessageLookupByLibrary.simpleMessage(
       "Домен, IP, CIDR или URL набора правил",
     ),

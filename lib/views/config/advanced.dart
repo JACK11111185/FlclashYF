@@ -10,8 +10,6 @@ import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'rules.dart';
-
 class AdvancedConfigView extends StatelessWidget {
   const AdvancedConfigView({super.key});
 
@@ -67,13 +65,6 @@ class AdvancedConfigView extends StatelessWidget {
           ],
           body: const DnsListView(),
         ),
-        blur: false,
-      ),
-      ListItem.open(
-        title: Text(appLocalizations.addedRules),
-        subtitle: Text(appLocalizations.controlGlobalAddedRules),
-        leading: const Icon(Icons.library_books),
-        widget: const AddedRulesView(),
         blur: false,
       ),
       ListItem.open(

@@ -14,6 +14,24 @@ class RouteInput {
   final String? content;
   final String? url;
   final String display;
+
+  String get inputKey => display;
+}
+
+List<RouteInput>? parseRouteInputs(String input) {
+  final values = input
+      .split(RegExp(r'[,\r\n]+'))
+      .map((value) => value.trim())
+      .where((value) => value.isNotEmpty)
+      .toList();
+  if (values.isEmpty) return null;
+  final parsed = <RouteInput>[];
+  for (final value in values) {
+    final routeInput = classifyRouteInput(value);
+    if (routeInput == null) return null;
+    parsed.add(routeInput);
+  }
+  return parsed;
 }
 
 RouteInput? classifyRouteInput(String input) {

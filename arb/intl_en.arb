@@ -802,5 +802,10 @@
   "routeProviders": "Rule providers",
   "routeMembers": "Nodes and groups",
   "routeInvalidInput": "Enter a valid domain, IP, CIDR, or HTTP(S) URL",
-  "routeGroupType": "Group type"
+  "routeGroupType": "Group type",
+  "routeInputHelp": "Separate multiple targets with commas or new lines",
+  "routeGroupManual": "Manual selection",
+  "routeGroupAuto": "Automatic selection",
+  "routeGroupBalance": "Load balancing",
+  "routeHealthInterval": "Health check interval"
 }

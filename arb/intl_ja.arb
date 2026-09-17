@@ -802,5 +802,10 @@
   "routeProviders": "ルールプロバイダー",
   "routeMembers": "ノードとグループ",
   "routeInvalidInput": "有効なドメイン、IP、CIDR、または HTTP(S) URL を入力してください",
-  "routeGroupType": "グループタイプ"
+  "routeGroupType": "グループタイプ",
+  "routeInputHelp": "複数の対象は半角コンマまたは改行で区切ります",
+  "routeGroupManual": "手動選択",
+  "routeGroupAuto": "自動選択",
+  "routeGroupBalance": "負荷分散",
+  "routeHealthInterval": "ヘルスチェック間隔"
 }

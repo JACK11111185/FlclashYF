@@ -92,7 +92,7 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: context.textTheme.bodyMedium?.toJetBrainsMono,
+            style: context.textTheme.titleMedium?.toJetBrainsMono,
           ),
         ],
       ),

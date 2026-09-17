@@ -802,5 +802,10 @@
   "routeProviders": "规则提供者",
   "routeMembers": "节点和组",
   "routeInvalidInput": "请输入有效的域名、IP、CIDR 或 HTTP(S) URL",
-  "routeGroupType": "组类型"
+  "routeGroupType": "组类型",
+  "routeInputHelp": "多个目标支持英文逗号分隔或每行一个",
+  "routeGroupManual": "手动选择",
+  "routeGroupAuto": "自动优选",
+  "routeGroupBalance": "负载均衡",
+  "routeHealthInterval": "健康监测频率"
 }

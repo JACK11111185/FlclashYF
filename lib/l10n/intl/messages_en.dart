@@ -742,9 +742,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Enter the rule content",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -1182,8 +1183,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeAddressDesc": MessageLookupByLibrary.simpleMessage(
       "Configure the listened route addresses",
     ),
+    "routeGroupAuto": MessageLookupByLibrary.simpleMessage(
+      "Automatic selection",
+    ),
+    "routeGroupBalance": MessageLookupByLibrary.simpleMessage("Load balancing"),
+    "routeGroupManual": MessageLookupByLibrary.simpleMessage(
+      "Manual selection",
+    ),
     "routeGroupType": MessageLookupByLibrary.simpleMessage("Group type"),
     "routeGroups": MessageLookupByLibrary.simpleMessage("Route groups"),
+    "routeHealthInterval": MessageLookupByLibrary.simpleMessage(
+      "Health check interval",
+    ),
+    "routeInputHelp": MessageLookupByLibrary.simpleMessage(
+      "Separate multiple targets with commas or new lines",
+    ),
     "routeInputHint": MessageLookupByLibrary.simpleMessage(
       "Domain, IP, CIDR, or rule-set URL",
     ),

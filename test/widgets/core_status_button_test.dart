@@ -31,30 +31,30 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(Icons.send_rounded), findsOneWidget);
       expect(find.byType(CommonCircleLoading), findsNothing);
 
       container.read(coreStatusProvider.notifier).value = CoreStatus.connecting;
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byType(CommonCircleLoading), findsOneWidget);
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(Icons.send_rounded), findsNothing);
 
       container.read(coreStatusProvider.notifier).value = CoreStatus.connected;
       await tester.pump();
       expect(find.byType(CommonCircleLoading), findsOneWidget);
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(Icons.send_rounded), findsNothing);
 
       await tester.pump(const Duration(milliseconds: 199));
       expect(find.byType(CommonCircleLoading), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 1));
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(Icons.send_rounded), findsOneWidget);
       expect(find.byType(CommonCircleLoading), findsNothing);
 
       await tester.pump(const Duration(seconds: 1));
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(Icons.send_rounded), findsOneWidget);
     },
   );
 
@@ -87,14 +87,14 @@ void main() {
       container.read(coreStatusProvider.notifier).value =
           CoreStatus.disconnected;
       await tester.pump();
-      expect(find.byIcon(Icons.restart_alt_sharp), findsOneWidget);
+      expect(find.byIcon(Icons.send_rounded), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byIcon(Icons.restart_alt_sharp), findsOneWidget);
+      expect(find.byIcon(Icons.send_rounded), findsOneWidget);
       expect(find.byType(CommonCircleLoading), findsNothing);
 
       await tester.pump(const Duration(seconds: 1));
-      expect(find.byIcon(Icons.restart_alt_sharp), findsOneWidget);
+      expect(find.byIcon(Icons.send_rounded), findsOneWidget);
       expect(find.byType(CommonCircleLoading), findsNothing);
     },
   );
@@ -128,11 +128,11 @@ void main() {
     container.read(coreStatusProvider.notifier).value = CoreStatus.connected;
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.send_rounded), findsOneWidget);
     expect(find.byType(CommonCircleLoading), findsNothing);
 
     await tester.pump(const Duration(seconds: 1));
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.send_rounded), findsOneWidget);
   });
 
   testWidgets('holds connecting when restarting from disconnected', (
@@ -156,7 +156,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byIcon(Icons.restart_alt_sharp), findsOneWidget);
+    expect(find.byIcon(Icons.send_rounded), findsOneWidget);
 
     container.read(coreStatusProvider.notifier).value = CoreStatus.connecting;
     await tester.pump();
@@ -173,10 +173,10 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 1));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.send_rounded), findsOneWidget);
     expect(find.byType(CommonCircleLoading), findsNothing);
 
     await tester.pump(const Duration(seconds: 1));
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.send_rounded), findsOneWidget);
   });
 }

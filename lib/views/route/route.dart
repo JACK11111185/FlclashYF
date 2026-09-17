@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/route_input.dart' as route_input;
 import 'package:fl_clash/database/database.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -100,9 +101,17 @@ class RouteView extends ConsumerWidget {
     WidgetRef ref,
     int profileId,
   ) async {
+    final config = await ref.read(clashConfigProvider(profileId).future);
+    if (!context.mounted) return;
     final input = TextEditingController();
-    final target = TextEditingController(text: 'DIRECT');
     final providerName = TextEditingController();
+    final targets = <String>{
+      'DIRECT',
+      'REJECT',
+      ...config.proxyGroups.map((group) => group.name),
+      ...config.proxies.map((proxy) => proxy.name),
+    }.toList();
+    var target = 'DIRECT';
     String? error;
     final saved = await showDialog<bool>(
       context: context,
@@ -114,17 +123,27 @@ class RouteView extends ConsumerWidget {
             children: [
               TextField(
                 controller: input,
+                minLines: 2,
+                maxLines: 5,
                 decoration: InputDecoration(
                   labelText: context.appLocalizations.routeInputHint,
+                  helperText: context.appLocalizations.routeInputHelp,
                   errorText: error,
                 ),
               ),
               const SizedBox(height: 12),
-              TextField(
-                controller: target,
+              DropdownButtonFormField<String>(
+                initialValue: target,
                 decoration: InputDecoration(
                   labelText: context.appLocalizations.routeTarget,
                 ),
+                items: targets
+                    .map(
+                      (value) =>
+                          DropdownMenuItem(value: value, child: Text(value)),
+                    )
+                    .toList(),
+                onChanged: (value) => setState(() => target = value!),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -142,8 +161,7 @@ class RouteView extends ConsumerWidget {
             ),
             FilledButton(
               onPressed: () {
-                if (classifyRouteInput(input.text) == null ||
-                    target.text.trim().isEmpty) {
+                if (route_input.parseRouteInputs(input.text) == null) {
                   setState(() {
                     error = context.appLocalizations.routeInvalidInput;
                   });
@@ -159,53 +177,62 @@ class RouteView extends ConsumerWidget {
     );
     if (saved != true) {
       input.dispose();
-      target.dispose();
       providerName.dispose();
       return;
     }
-    final parsed = classifyRouteInput(input.text)!;
-    final RouteInput routeInput = parsed;
-    if (routeInput.url != null) {
-      final name = providerName.text.trim().isEmpty
-          ? Uri.parse(routeInput.url!).host.replaceAll('.', '-')
-          : providerName.text.trim();
-      await ref
-          .read(routeStoreProvider(profileId))
-          .putProvider(
-            RouteRuleProvider(
-              id: snowflake.id,
-              name: name,
-              profileId: profileId,
-              url: routeInput.url!,
-              behavior: 'domain',
-              format: 'yaml',
-              interval: 86400,
-            ),
-          );
-      await ref
-          .read(routeStoreProvider(profileId))
-          .putRule(
-            Rule(
-              id: snowflake.id,
-              ruleAction: RuleAction.RULE_SET,
-              ruleProvider: name,
-              ruleTarget: target.text.trim(),
-            ),
-          );
-    } else {
-      await ref
-          .read(routeStoreProvider(profileId))
-          .putRule(
-            Rule(
-              id: snowflake.id,
-              ruleAction: routeInput.action!,
-              content: routeInput.content,
-              ruleTarget: target.text.trim(),
-            ),
-          );
+    final List<route_input.RouteInput> routeInputs = route_input
+        .parseRouteInputs(input.text)!;
+    final List<Rule> rules = <Rule>[];
+    final List<RouteRuleProvider> providers = <RouteRuleProvider>[];
+    final baseName = providerName.text.trim();
+    for (var index = 0; index < routeInputs.length; index++) {
+      final route_input.RouteInput routeInput = routeInputs[index];
+      final id = snowflake.id;
+      if (routeInput.url != null) {
+        final derivedName = Uri.parse(
+          routeInput.url!,
+        ).host.replaceAll('.', '-');
+        final name = baseName.isEmpty
+            ? routeInputs.length == 1
+                  ? derivedName
+                  : '$derivedName-${index + 1}'
+            : routeInputs.length == 1
+            ? baseName
+            : '$baseName-${index + 1}';
+        providers.add(
+          RouteRuleProvider(
+            id: id,
+            name: name,
+            profileId: profileId,
+            url: routeInput.url!,
+            behavior: 'domain',
+            format: 'yaml',
+            interval: 86400,
+          ),
+        );
+        rules.add(
+          Rule(
+            id: id,
+            ruleAction: RuleAction.RULE_SET,
+            ruleProvider: name,
+            ruleTarget: target,
+          ),
+        );
+      } else {
+        rules.add(
+          Rule(
+            id: id,
+            ruleAction: routeInput.action!,
+            content: routeInput.content,
+            ruleTarget: target,
+          ),
+        );
+      }
     }
+    await ref
+        .read(routeStoreProvider(profileId))
+        .putRoutes(rules: rules, providers: providers);
     input.dispose();
-    target.dispose();
     providerName.dispose();
   }
 
@@ -217,6 +244,7 @@ class RouteView extends ConsumerWidget {
     final config = await ref.read(clashConfigProvider(profileId).future);
     if (!context.mounted) return;
     final name = TextEditingController();
+    final interval = TextEditingController(text: '300');
     var type = GroupType.Selector;
     final choices = {
       ...config.proxies.map((proxy) => proxy.name),
@@ -256,12 +284,51 @@ class RouteView extends ConsumerWidget {
                             .map(
                               (value) => DropdownMenuItem(
                                 value: value,
-                                child: Text(value.value),
+                                child: Row(
+                                  children: [
+                                    Text(value.value),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      switch (value) {
+                                        GroupType.Selector =>
+                                          context
+                                              .appLocalizations
+                                              .routeGroupManual,
+                                        GroupType.URLTest =>
+                                          context
+                                              .appLocalizations
+                                              .routeGroupAuto,
+                                        GroupType.LoadBalance =>
+                                          context
+                                              .appLocalizations
+                                              .routeGroupBalance,
+                                        _ => '',
+                                      },
+                                      style: context.textTheme.labelSmall
+                                          ?.copyWith(
+                                            color: context
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             )
                             .toList(),
                     onChanged: (value) => setState(() => type = value!),
                   ),
+                  if (type == GroupType.URLTest) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: interval,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: context.appLocalizations.routeHealthInterval,
+                        suffixText: context.appLocalizations.seconds,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Text(context.appLocalizations.routeMembers),
                   Wrap(
@@ -310,12 +377,15 @@ class RouteView extends ConsumerWidget {
               url: type == GroupType.Selector
                   ? null
                   : 'https://www.gstatic.com/generate_204',
-              interval: type == GroupType.Selector ? null : 300,
+              interval: type == GroupType.Selector
+                  ? null
+                  : int.tryParse(interval.text) ?? 300,
               routeManaged: true,
             ),
           );
     }
     name.dispose();
+    interval.dispose();
   }
 }
 

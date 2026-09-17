@@ -802,5 +802,10 @@
   "routeProviders": "Провайдеры правил",
   "routeMembers": "Узлы и группы",
   "routeInvalidInput": "Введите допустимый домен, IP, CIDR или URL HTTP(S)",
-  "routeGroupType": "Тип группы"
+  "routeGroupType": "Тип группы",
+  "routeInputHelp": "Разделяйте несколько целей запятыми или переносами строк",
+  "routeGroupManual": "Ручной выбор",
+  "routeGroupAuto": "Автовыбор",
+  "routeGroupBalance": "Балансировка",
+  "routeHealthInterval": "Интервал проверки"
 }

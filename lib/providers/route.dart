@@ -39,6 +39,20 @@ class RouteStore {
     return database.rulesDao.putProfileRouteRule(profileId, rule);
   }
 
+  Future<void> putRoutes({
+    required List<Rule> rules,
+    List<RouteRuleProvider> providers = const [],
+  }) {
+    return database.transaction(() async {
+      for (final provider in providers) {
+        await database.routeRuleProvidersDao.put(provider);
+      }
+      for (final rule in rules) {
+        await database.rulesDao.putProfileRouteRule(profileId, rule);
+      }
+    });
+  }
+
   Future<void> removeRule(int id) {
     return database.rulesDao.delRules([id]);
   }

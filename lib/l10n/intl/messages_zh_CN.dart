@@ -852,8 +852,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "route": MessageLookupByLibrary.simpleMessage("路由"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("路由地址"),
     "routeAddressDesc": MessageLookupByLibrary.simpleMessage("配置监听路由地址"),
+    "routeGroupAuto": MessageLookupByLibrary.simpleMessage("自动优选"),
+    "routeGroupBalance": MessageLookupByLibrary.simpleMessage("负载均衡"),
+    "routeGroupManual": MessageLookupByLibrary.simpleMessage("手动选择"),
     "routeGroupType": MessageLookupByLibrary.simpleMessage("组类型"),
     "routeGroups": MessageLookupByLibrary.simpleMessage("路由组"),
+    "routeHealthInterval": MessageLookupByLibrary.simpleMessage("健康监测频率"),
+    "routeInputHelp": MessageLookupByLibrary.simpleMessage("多个目标支持英文逗号分隔或每行一个"),
     "routeInputHint": MessageLookupByLibrary.simpleMessage(
       "域名、IP、CIDR 或规则集 URL",
     ),

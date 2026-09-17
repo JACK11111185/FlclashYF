@@ -3,6 +3,21 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('parseRouteInputs', () {
+    test('splits comma and newline separated targets', () {
+      final result = parseRouteInputs('example.com, 192.0.2.1\n*.example.org');
+
+      expect(result, hasLength(3));
+      expect(result?[0].content, 'example.com');
+      expect(result?[1].content, '192.0.2.1/32');
+      expect(result?[2].action, RuleAction.DOMAIN_SUFFIX);
+    });
+
+    test('rejects the whole batch when any target is invalid', () {
+      expect(parseRouteInputs('example.com, invalid'), isNull);
+    });
+  });
+
   group('classifyRouteInput', () {
     test('classifies exact IPv4 addresses as host CIDRs', () {
       final result = classifyRouteInput('192.0.2.1');
