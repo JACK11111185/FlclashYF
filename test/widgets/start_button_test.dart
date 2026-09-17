@@ -1,6 +1,7 @@
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/views/dashboard/widgets/paper_plane_status_icon.dart';
 import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,55 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'uses a crossed gray plane when stopped and green plane when running',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          profilesProvider.overrideWithValue([
+            const Profile(id: 1, autoUpdateDuration: Duration.zero),
+          ]),
+          suspendProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+      globalState.container = container;
+      container.read(runTimeProvider.notifier).value = null;
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: TestApp(
+            includeNavigatorKey: false,
+            setTheme: false,
+            homeBuilder: (child) => Scaffold(floatingActionButton: child),
+            child: const StartButton(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(PaperPlaneStatusIcon), findsOneWidget);
+      expect(
+        tester
+            .widget<PaperPlaneStatusIcon>(find.byType(PaperPlaneStatusIcon))
+            .disconnected,
+        isTrue,
+      );
+
+      container.read(runTimeProvider.notifier).value = 1;
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<PaperPlaneStatusIcon>(find.byType(PaperPlaneStatusIcon))
+            .disconnected,
+        isFalse,
+      );
+    },
+  );
+
   testWidgets('RunTimeText formats long runtimes in days', (tester) async {
     const colorScheme = ColorScheme.light(
       primary: Color(0xFF6750A4),
