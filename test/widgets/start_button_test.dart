@@ -38,6 +38,10 @@ void main() {
       );
       await tester.pump();
 
+      final stoppedButton = tester.widget<FloatingActionButton>(
+        find.byType(FloatingActionButton),
+      );
+      expect(stoppedButton.backgroundColor, const Color(0xFFF1F3F4));
       expect(find.byType(PaperPlaneStatusIcon), findsOneWidget);
       expect(
         tester
@@ -50,6 +54,10 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
+      final runningButton = tester.widget<FloatingActionButton>(
+        find.byType(FloatingActionButton),
+      );
+      expect(runningButton.backgroundColor, const Color(0xFFD7F5DD));
       expect(
         tester
             .widget<PaperPlaneStatusIcon>(find.byType(PaperPlaneStatusIcon))

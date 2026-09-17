@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/method.dart';
@@ -9,14 +7,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MemoryInfo extends ConsumerStatefulWidget {
-  const MemoryInfo({
-    super.key,
-    @visibleForTesting this.memoryReader,
-    @visibleForTesting this.appMemoryReader,
-  });
+  const MemoryInfo({super.key, @visibleForTesting this.memoryReader});
 
   final Future<num> Function()? memoryReader;
-  final num Function()? appMemoryReader;
 
   @override
   ConsumerState<MemoryInfo> createState() => _MemoryInfoState();
@@ -25,7 +18,6 @@ class MemoryInfo extends ConsumerStatefulWidget {
 class _MemoryInfoState extends ConsumerState<MemoryInfo>
     with WidgetsBindingObserver, ActivePollingMixin<MemoryInfo> {
   final _coreMemory = ValueNotifier<num?>(null);
-  final _appMemory = ValueNotifier<num?>(null);
 
   CoreController get _core => ref.read(coreHandlerProvider);
 
@@ -35,7 +27,6 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
   @override
   void dispose() {
     _coreMemory.dispose();
-    _appMemory.dispose();
     super.dispose();
   }
 
@@ -43,18 +34,8 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
   Future<void> poll(PollGuard isCurrent) async {
     final coreMemory = await _readCoreMemory();
     if (!isCurrent()) return;
-    _appMemory.value = _readAppMemory();
     if (coreMemory != null) {
       _coreMemory.value = coreMemory;
-    }
-  }
-
-  num _readAppMemory() {
-    try {
-      return widget.appMemoryReader?.call() ?? ProcessInfo.currentRss;
-    } catch (error) {
-      commonPrint.log('read app memory error: $error');
-      return 0;
     }
   }
 
@@ -75,27 +56,25 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
   Widget _value(BuildContext context, String label, num? bytes) {
     final traffic = bytes?.traffic;
     final text = traffic == null ? '—' : '${traffic.value}${traffic.unit}';
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: context.textTheme.labelSmall?.copyWith(
-              color: context.colorScheme.onSurfaceVariant,
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.labelSmall?.copyWith(
+            color: context.colorScheme.onSurfaceVariant,
           ),
-          Text(
-            text,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: context.textTheme.titleMedium?.toJetBrainsMono,
-          ),
-        ],
-      ),
+        ),
+        Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.titleMedium?.toJetBrainsMono,
+        ),
+      ],
     );
   }
 
@@ -116,17 +95,9 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
                 const SizedBox(width: 12),
                 Expanded(
                   child: ValueListenableBuilder(
-                    valueListenable: _appMemory,
-                    builder: (_, appMemory, _) => ValueListenableBuilder(
-                      valueListenable: _coreMemory,
-                      builder: (_, coreMemory, _) => Row(
-                        children: [
-                          _value(context, l10n.application, appMemory),
-                          const SizedBox(width: 8),
-                          _value(context, l10n.core, coreMemory),
-                        ],
-                      ),
-                    ),
+                    valueListenable: _coreMemory,
+                    builder: (_, coreMemory, _) =>
+                        _value(context, l10n.core, coreMemory),
                   ),
                 ),
               ],

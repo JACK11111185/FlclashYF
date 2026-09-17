@@ -1,4 +1,3 @@
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -181,13 +180,11 @@ class _StartButtonState extends ConsumerState<StartButton>
             materialTapTargetSize: MaterialTapTargetSize.padded,
             heroTag: null,
             backgroundColor: isStart
-                ? const Color(
-                    0xFF2E7D32,
-                  ).harmonizeWith(context.colorScheme.primary)
-                : context.colorScheme.surfaceContainerHigh,
+                ? const Color(0xFFD7F5DD)
+                : const Color(0xFFF1F3F4),
             foregroundColor: isStart
-                ? context.colorScheme.onPrimary
-                : context.colorScheme.onSurfaceVariant,
+                ? const Color(0xFF176B34)
+                : const Color(0xFF5F6368),
             onPressed: handleSwitchStart,
             child: Row(
               mainAxisSize: MainAxisSize.min,
