@@ -179,6 +179,7 @@ class _ProfilesGrid extends ConsumerWidget {
               profile: profile,
               groupValue: currentProfileId,
               onChanged: (profileId) {
+                if (ref.read(currentProfileIdProvider) == profileId) return;
                 ref.read(currentProfileIdProvider.notifier).value = profileId;
               },
             );

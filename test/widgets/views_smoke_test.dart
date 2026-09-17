@@ -41,6 +41,8 @@ import '../helpers/test_app.dart';
 import '../helpers/test_database_providers.dart';
 import '../helpers/test_profiles.dart';
 
+class _DashboardCoreHandler extends Mock implements CoreHandlerInterface {}
+
 Finder _portField(String label) =>
     find.ancestor(of: find.text(label), matching: find.byType(TextFormField));
 
@@ -272,6 +274,10 @@ void main() {
           if (networkingCoreHandler != null)
             coreHandlerProvider.overrideWithValue(
               CoreController.scoped(networkingCoreHandler),
+            ),
+          if (entry.key == 'dashboard')
+            coreHandlerProvider.overrideWithValue(
+              CoreController.scoped(_DashboardCoreHandler()),
             ),
         ],
       );
@@ -645,6 +651,7 @@ void main() {
       expect(tester.takeException(), null);
 
       await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
     });
   }
 

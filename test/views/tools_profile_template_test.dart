@@ -46,8 +46,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(ProfileTemplateView), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 100));
   });
 }
