@@ -41,7 +41,7 @@ void main() {
 
     test('the retry loop is bounded and backs off', () {
       final controller = source('ios/Runner/Tunnel/TunnelController.swift');
-      expect(controller, contains('emptyReplyRetryLimit = 3'));
+      expect(controller, contains('emptyReplyRetryLimit = 6'));
       expect(controller, contains('emptyReplyRetryBackoff'));
       expect(controller, contains('Task.sleep(nanoseconds: backoff)'));
       expect(controller, contains('for attempt in 1...emptyReplyRetryLimit'));

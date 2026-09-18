@@ -154,9 +154,13 @@ final class TunnelController {
   /// run memory reclaim; during that window the system drops in-flight provider
   /// messages. Retrying a few times with a short backoff turns what used to be a
   /// user-visible `empty_response` toast into a slightly slower success.
-  private let emptyReplyRetryLimit = 3
+  private let emptyReplyRetryLimit = 6
   private let emptyReplyRetryBackoff: [UInt64] = [
-    150_000_000, 400_000_000,
+    300_000_000,
+    700_000_000,
+    1_500_000_000,
+    2_500_000_000,
+    4_000_000_000,
   ]
 
   func sendProviderMessage(_ data: Data) async throws -> String {
@@ -191,7 +195,9 @@ final class TunnelController {
         }
         return response
       } catch let error as ProviderMessageError
-        where error.code == emptyReplyRetryCode
+        where error.code == emptyReplyRetryCode ||
+            error.code == "network_extension_unavailable" ||
+            error.code == "network_extension_timeout"
       {
         guard attempt < emptyReplyRetryLimit else {
           // Out of retries: report the terminal code the app layer knows.
@@ -227,8 +233,6 @@ final class TunnelController {
     attempt: Int
   ) async throws -> String {
     let startedAt = Date()
-    // Captured locally: the closure below runs with a weak `self`, and the
-    // marker must survive even if the controller is torn down mid-flight.
     let retryCode = emptyReplyRetryCode
     log("provider message begin seq=\(sequence) attempt=\(attempt) bytes=\(data.count)")
     let manager: NETunnelProviderManager?
