@@ -625,50 +625,45 @@ void main() {
       },
     );
 
-    test(
-      'a profile that fails to build still pushes the empty config to core',
-      () async {
-        final profile = Profile.normal(label: 'p');
-        final core = _MockCoreHandlerInterface();
-        when(
-          () => core.getProfileConfig(any()),
-        ).thenThrow(Exception('broken yaml'));
-        String? pushedConfig;
-        when(() => core.setupConfig(any())).thenAnswer((_) async {
-          pushedConfig = await File(
-            await appPath.configFilePath,
-          ).readAsString();
-          return '';
-        });
-        globalState.packageInfo = PackageInfo(
-          appName: 'FlClash',
-          packageName: 'com.follow.clash',
-          version: '0.0.0',
-          buildNumber: '0',
-        );
-        final scoped = ProviderContainer(
-          overrides: [
-            profilesProvider.overrideWith(() => TestProfiles([profile])),
-            currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
-            setupStateProvider.overrideWith(
-              (_, profileId) =>
-                  nullProfileSetupState.copyWith(profileId: profileId),
-            ),
-            coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
-            setupActionProvider.overrideWith(SetupAction.new),
-          ],
-        );
-        addTearDown(scoped.dispose);
+    test('a profile that fails to build retains the previous config', () async {
+      final profile = Profile.normal(label: 'p');
+      final core = _MockCoreHandlerInterface();
+      when(
+        () => core.getProfileConfig(any()),
+      ).thenThrow(Exception('broken yaml'));
+      String? pushedConfig;
+      when(() => core.setupConfig(any())).thenAnswer((_) async {
+        pushedConfig = await File(await appPath.configFilePath).readAsString();
+        return '';
+      });
+      globalState.packageInfo = PackageInfo(
+        appName: 'FlClash',
+        packageName: 'com.follow.clash',
+        version: '0.0.0',
+        buildNumber: '0',
+      );
+      final scoped = ProviderContainer(
+        overrides: [
+          profilesProvider.overrideWith(() => TestProfiles([profile])),
+          currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
+          setupStateProvider.overrideWith(
+            (_, profileId) =>
+                nullProfileSetupState.copyWith(profileId: profileId),
+          ),
+          coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          setupActionProvider.overrideWith(SetupAction.new),
+        ],
+      );
+      addTearDown(scoped.dispose);
 
-        final succeeded = await scoped
-            .read(setupActionProvider.notifier)
-            .applyProfile(force: true);
+      final succeeded = await scoped
+          .read(setupActionProvider.notifier)
+          .applyProfile(force: true);
 
-        expect(succeeded, isFalse);
-        expect(pushedConfig, isEmpty);
-        expect(scoped.read(currentProfileIdProvider), profile.id);
-      },
-    );
+      expect(succeeded, isFalse);
+      expect(pushedConfig, isNull);
+      expect(scoped.read(currentProfileIdProvider), profile.id);
+    });
 
     test(
       'a config write failure reports setup as failed without calling core',
