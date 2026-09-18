@@ -27,9 +27,7 @@ void main() {
       final source = File(
         'lib/providers/actions/setup.dart',
       ).readAsStringSync();
-      final skipStart = source.indexOf(
-        'if (!profileFailed && yamlMd5 == globalState.lastConfigMd5 && !force)',
-      );
+      final skipStart = source.indexOf('if (skipRedundantReload) {');
       expect(skipStart, greaterThan(-1));
       final skipEnd = source.indexOf(
         'return _SetupTaskResult.completed;',

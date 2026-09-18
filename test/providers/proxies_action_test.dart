@@ -178,7 +178,7 @@ void main() {
     );
 
     test(
-      'clears the groups once retry is exhausted after core throws',
+      'retains the groups once retry is exhausted after core throws',
       () async {
         when(core.getProxies).thenThrow(StateError('core down'));
         final container = buildContainer(profile: _selectedProfile('HK-01'));
@@ -188,7 +188,9 @@ void main() {
 
         await actionOf(container).updateGroups();
 
-        expect(container.read(groupsProvider), isEmpty);
+        expect(container.read(groupsProvider).map((group) => group.name), [
+          'Stale',
+        ]);
         expect(container.read(currentProfileProvider)?.selectedMap, {
           'Proxy': 'HK-01',
         });
