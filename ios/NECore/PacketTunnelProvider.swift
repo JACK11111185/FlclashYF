@@ -46,7 +46,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     let stateResult = sharedStateStore.loadVPNOptionsResult()
     guard let vpnOptions = stateResult.options else {
       logger.error(
-        "startTunnel failed: missing vpn options source=\(stateResult.failure?.rawValue ?? \"unknown\")"
+        "startTunnel failed: missing vpn options source=\(stateResult.failure?.rawValue ?? "unknown")"
       )
       completionHandler(PacketTunnelProviderError.missingVPNOptions)
       return
