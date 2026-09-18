@@ -73,10 +73,7 @@ void main() {
       // this way.
       final names = _declaration
           .allMatches(source)
-          .map(
-            (match) =>
-                match.group(1) ?? match.group(2) ?? match.group(3)!,
-          )
+          .map((match) => match.group(1) ?? match.group(2) ?? match.group(3)!)
           .toSet();
       if (names.isEmpty) continue;
 

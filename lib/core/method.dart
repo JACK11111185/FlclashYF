@@ -147,15 +147,14 @@ class CoreMethodException implements Exception {
     this.details,
   });
 
-  bool get isCoreUnavailable =>
-      const {
-        'transport_disconnected',
-        'transport_error',
-        // iOS: the tunnel was stopped (or is stopping) while a provider message
-        // was still in flight — the system drops those replies. This is an
-        // expected side effect of stop/switch, not a failure to show the user.
-        'network_extension_unavailable',
-      }.contains(code);
+  bool get isCoreUnavailable => const {
+    'transport_disconnected',
+    'transport_error',
+    // iOS: the tunnel was stopped (or is stopping) while a provider message
+    // was still in flight — the system drops those replies. This is an
+    // expected side effect of stop/switch, not a failure to show the user.
+    'network_extension_unavailable',
+  }.contains(code);
 
   @override
   String toString() => 'CoreMethodException($code, $message, $details)';
