@@ -78,6 +78,15 @@ void main() {
   });
 
   group('provider messages are admission controlled', () {
+    test(
+      'iOS group refresh waits through delayed Network Extension startup',
+      () {
+        final source = read('lib/providers/actions/proxies.dart');
+        expect(source, contains('maxAttempts: system.isIOS ? 8 : 3'));
+        expect(source, contains('const Duration(seconds: 2)'));
+      },
+    );
+
     test('the controller bounds in-flight requests', () {
       final source = read('ios/Runner/Tunnel/TunnelController.swift');
       expect(source, contains('private let maxInFlightProviderMessages = 8'));

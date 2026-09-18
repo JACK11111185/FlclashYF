@@ -312,16 +312,18 @@ class SetupAction extends _$SetupAction {
     if (profileSwitched) {
       await _releasePreviousProfile();
     }
+    Future<void> onUpdated() async {
+      await ref.read(proxiesActionProvider.notifier).updateGroups();
+      await ref.read(providersProvider.notifier).syncProviders();
+    }
+
     final result = await _setupScheduler.run(() {
       return _setupConfig(
         force: force,
         silence: silence,
         profileSwitched: profileSwitched,
         preloadInvoke: preloadInvoke,
-        onUpdated: () async {
-          await ref.read(proxiesActionProvider.notifier).updateGroups();
-          await ref.read(providersProvider.notifier).syncProviders();
-        },
+        onUpdated: onUpdated,
       );
     });
     if (result != _SetupTaskResult.handoffToCoreRestart) {

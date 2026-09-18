@@ -117,10 +117,15 @@ void main() {
 
     test('onUpdated is what reloads the groups', () {
       final setup = source('lib/providers/actions/setup.dart');
-      final onUpdated = setup.indexOf('onUpdated: () async {');
+      final onUpdated = setup.indexOf('onUpdated: onUpdated');
       expect(onUpdated, greaterThan(-1));
-      final body = setup.substring(onUpdated, onUpdated + 260);
-      expect(body, contains('updateGroups()'));
+      expect(setup, contains('Future<void> onUpdated() async'));
+      expect(
+        setup,
+        contains(
+          'await ref.read(proxiesActionProvider.notifier).updateGroups()',
+        ),
+      );
     });
 
     test('a transient empty or failed refresh keeps the last known groups', () {

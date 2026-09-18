@@ -87,6 +87,8 @@ class ProxiesAction extends _$ProxiesAction {
     try {
       commonPrint.log('updateGroups');
       final groups = await retry<List<Group>>(
+        maxAttempts: system.isIOS ? 8 : 3,
+        delay: system.isIOS ? const Duration(seconds: 2) : midDuration,
         task: () async {
           final sortType = ref.read(
             proxiesStyleSettingProvider.select((state) => state.sortType),
