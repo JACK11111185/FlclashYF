@@ -52,18 +52,23 @@ void main() {
       expect(body, contains('return baseReclaimPolicy'));
     });
 
-    test('consecutive no-op reclaims escalate threshold and back off cooldown',
-        () {
-      final heartbeat = source('ios/NECore/NativeResourceHeartbeat.swift');
-      expect(heartbeat, contains('ineffectiveStreakLimit'));
-      expect(heartbeat, contains('escalatedReclaimMB'));
-      expect(heartbeat, contains('min(current.cooldown * 2, maxReclaimCooldown)'));
-      expect(
-        heartbeat,
-        contains('max(current.thresholdMB, escalatedReclaimMB)'),
-        reason: 'escalation must never lower the threshold back down',
-      );
-    });
+    test(
+      'consecutive no-op reclaims escalate threshold and back off cooldown',
+      () {
+        final heartbeat = source('ios/NECore/NativeResourceHeartbeat.swift');
+        expect(heartbeat, contains('ineffectiveStreakLimit'));
+        expect(heartbeat, contains('escalatedReclaimMB'));
+        expect(
+          heartbeat,
+          contains('min(current.cooldown * 2, maxReclaimCooldown)'),
+        );
+        expect(
+          heartbeat,
+          contains('max(current.thresholdMB, escalatedReclaimMB)'),
+          reason: 'escalation must never lower the threshold back down',
+        );
+      },
+    );
 
     test('the backstop still fires before the 48 MB death line', () {
       final heartbeat = source('ios/NECore/NativeResourceHeartbeat.swift');
@@ -79,10 +84,7 @@ void main() {
         heartbeat,
         contains('usage.footprintMB >= self.reclaimPolicy.thresholdMB'),
       );
-      expect(
-        heartbeat,
-        contains('cooldown: self.reclaimPolicy.cooldown'),
-      );
+      expect(heartbeat, contains('cooldown: self.reclaimPolicy.cooldown'));
     });
 
     test('the reclaim outcome is observable in the durable log', () {
@@ -123,7 +125,10 @@ void main() {
       // Keyed off the escalated threshold, not the warning one: with a p50 of
       // 38 MB, exempting everything over the 30 MB warning line would exempt
       // 96.5% of samples and defeat the throttle entirely.
-      expect(body, contains('if footprintMB >= escalatedReclaimMB { return true }'));
+      expect(
+        body,
+        contains('if footprintMB >= escalatedReclaimMB { return true }'),
+      );
       expect(
         body,
         isNot(contains('footprintMB >= footprintWarningMB { return true }')),

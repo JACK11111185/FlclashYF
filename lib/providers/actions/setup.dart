@@ -41,11 +41,25 @@ class SetupAction extends _$SetupAction {
     return SetupParams(selectedMap: selectedMap, testUrl: testUrl);
   }
 
-  Future<bool> fullSetup() async {
+  Future<void> _releasePreviousProfile() async {
+    try {
+      await _core.closeConnections();
+    } catch (error) {
+      commonPrint.log(
+        'release previous profile connections failed: $error',
+        logLevel: LogLevel.warning,
+      );
+    }
+  }
+
+  Future<bool> fullSetup({bool profileSwitched = false}) async {
     if (!ref.read(initProvider)) return true;
     ref.read(proxiesActionProvider.notifier).cancelDelayTests();
     ref.read(delayDataSourceProvider.notifier).value = {};
-    final setupResult = applyProfile(force: true);
+    final setupResult = applyProfile(
+      force: true,
+      profileSwitched: profileSwitched,
+    );
     ref.read(logsProvider.notifier).value = FixedList(maxLogsLength);
     ref.read(requestsProvider.notifier).value = FixedList(maxRequestsLength);
     try {
@@ -277,11 +291,13 @@ class SetupAction extends _$SetupAction {
   Future<bool> applyProfile({
     bool silence = false,
     bool force = false,
+    bool profileSwitched = false,
     Future<void> Function()? preloadInvoke,
   }) async {
     final result = await _runSetup(
       force: force,
       silence: silence,
+      profileSwitched: profileSwitched,
       preloadInvoke: preloadInvoke,
     );
     return result != _SetupTaskResult.failed;
@@ -290,12 +306,17 @@ class SetupAction extends _$SetupAction {
   Future<_SetupTaskResult> _runSetup({
     bool silence = false,
     bool force = false,
+    bool profileSwitched = false,
     Future<void> Function()? preloadInvoke,
   }) async {
+    if (profileSwitched) {
+      await _releasePreviousProfile();
+    }
     final result = await _setupScheduler.run(() {
       return _setupConfig(
         force: force,
         silence: silence,
+        profileSwitched: profileSwitched,
         preloadInvoke: preloadInvoke,
         onUpdated: () async {
           await ref.read(proxiesActionProvider.notifier).updateGroups();
@@ -477,6 +498,7 @@ class SetupAction extends _$SetupAction {
   Future<_SetupTaskResult> _setupConfig({
     bool force = false,
     bool silence = false,
+    bool profileSwitched = false,
     Future<void> Function()? preloadInvoke,
     FutureOr Function()? onUpdated,
   }) async {
@@ -494,7 +516,6 @@ class SetupAction extends _$SetupAction {
     commonPrint.log('setup ===> ${profile?.realLabel}');
     final setupProfileId = profile?.id;
     final setupEpoch = _profileEpoch.select(setupProfileId);
-    ref.read(groupsProvider.notifier).value = [];
     final patchConfig = ref.read(patchClashConfigProvider);
     final shouldContinueSetup = await requestAdmin(patchConfig.tun.enable);
     if (!shouldContinueSetup) {
@@ -511,19 +532,28 @@ class SetupAction extends _$SetupAction {
     final profileFailed = realProfile == null;
     final yamlString = realProfile?.yaml ?? '';
     final yamlMd5 = realProfile?.md5 ?? '';
+    if (profileFailed) {
+      commonPrint.log(
+        'profile build failed; retaining the last applied configuration',
+        logLevel: LogLevel.warning,
+      );
+      return _SetupTaskResult.failed;
+    }
     // On iOS the Network Extension may outlive Flutter. Persisted YAML identity
     // lets a foreground return avoid rebuilding the Core when it already has the
     // exact configuration, while a content check protects against a fresh
     // extension that must reload the profile.
-    final appliedMd5 = globalState.lastConfigMd5 ??
-        await preferences.getAppliedConfigMd5();
+    final appliedMd5 =
+        globalState.lastConfigMd5 ?? await preferences.getAppliedConfigMd5();
     final configFile = File(await appPath.configFilePath);
-    final diskMatches = await configFile.exists() &&
+    final diskMatches =
+        await configFile.exists() &&
         (await configFile.readAsString()).toMd5() == yamlMd5;
-    final matchesAppliedConfig = !profileFailed &&
-        yamlMd5 == appliedMd5 &&
-        diskMatches;
-    final skipRedundantReload = matchesAppliedConfig &&
+    final matchesAppliedConfig =
+        !profileFailed && yamlMd5 == appliedMd5 && diskMatches;
+    final skipRedundantReload =
+        !profileSwitched &&
+        matchesAppliedConfig &&
         (!force || (system.isIOS && _isRunning));
     if (skipRedundantReload) {
       globalState.lastConfigMd5 = yamlMd5;

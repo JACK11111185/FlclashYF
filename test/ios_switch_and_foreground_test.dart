@@ -49,10 +49,12 @@ void main() {
 
     test('exhausting the retries reports the terminal code once', () {
       final controller = source('ios/Runner/Tunnel/TunnelController.swift');
-      final loopStart = controller.indexOf('guard attempt < emptyReplyRetryLimit');
+      final loopStart = controller.indexOf(
+        'guard attempt < emptyReplyRetryLimit',
+      );
       expect(loopStart, greaterThan(-1));
       final guardBody = controller.substring(loopStart, loopStart + 400);
-      expect(guardBody, contains("code: \"empty_response\""));
+      expect(guardBody, contains('code: "empty_response"'));
       expect(guardBody, contains('provider message empty seq='));
     });
 
@@ -83,12 +85,12 @@ void main() {
 
     test('loadingRun swallows core-unavailable failures', () {
       final state = source('lib/state.dart');
-      final catchStart = state.indexOf("commonPrint.log('\$title ===> \$e, \$s'");
+      final catchStart = state.indexOf('isCoreUnavailableError(e)');
       expect(catchStart, greaterThan(-1));
-      final body = state.substring(catchStart, catchStart + 500);
+      final body = state.substring(catchStart - 220, catchStart + 300);
       expect(
         body.indexOf('isCoreUnavailableError(e)'),
-        lessThan(body.indexOf('showNotifier(e.toString()')),
+        lessThan(body.indexOf('showNotifier')),
         reason: 'the guard must run before the notifier',
       );
     });
@@ -99,7 +101,10 @@ void main() {
       final setup = source('lib/providers/actions/setup.dart');
       final skipStart = setup.indexOf('if (skipRedundantReload) {');
       expect(skipStart, greaterThan(-1));
-      final skipEnd = setup.indexOf('return _SetupTaskResult.completed', skipStart);
+      final skipEnd = setup.indexOf(
+        'return _SetupTaskResult.completed',
+        skipStart,
+      );
       expect(skipEnd, greaterThan(skipStart));
       final skipBody = setup.substring(skipStart, skipEnd);
       expect(
@@ -134,9 +139,9 @@ void main() {
     });
 
     test('the tab is derived from the group list, so it must stay filled', () {
-      final state = source('lib/providers/state.dart');
-      expect(state, contains('final hasProxies = ref.watch('));
-      expect(state, contains('currentGroupsStateProvider.select'));
+      final navigation = source('lib/providers/state/navigation.dart');
+      expect(navigation, contains('final hasProxies = ref.watch('));
+      expect(navigation, contains('currentGroupsStateProvider.select'));
     });
   });
 }

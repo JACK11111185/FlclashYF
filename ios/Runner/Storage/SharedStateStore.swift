@@ -6,6 +6,7 @@ final class SharedStateStore {
   private let runTimeKey = "runTime"
   private let profileEpochKey = "profileEpoch"
   private let appliedProfileEpochKey = "appliedProfileEpoch"
+  private let tunnelAttemptIDKey = "tunnelAttemptID"
   private let eventQueueDirectoryName = "core-events"
   private let snapshotFileName = "shared-state.json"
 
@@ -132,6 +133,34 @@ final class SharedStateStore {
 
   func sharedStateSnapshotURL() -> URL? {
     appGroupDirectory()?.appendingPathComponent(snapshotFileName)
+  }
+
+  func sharedStateData() -> Data? {
+    UserDefaults(suiteName: appGroupIdentifier)?.data(forKey: sharedStateKey)
+  }
+
+  func beginTunnelAttempt() -> String {
+    let attemptID = UUID().uuidString.lowercased()
+    UserDefaults(suiteName: appGroupIdentifier)?.set(
+      attemptID,
+      forKey: tunnelAttemptIDKey
+    )
+    return attemptID
+  }
+
+  func makeTunnelStartOptions() -> [String: NSObject] {
+    var options: [String: NSObject] = [:]
+    if let data = sharedStateData(),
+      let text = String(data: data, encoding: .utf8)
+    {
+      options[sharedStateKey] = text as NSString
+    }
+    if let attemptID = UserDefaults(suiteName: appGroupIdentifier)?
+      .string(forKey: tunnelAttemptIDKey)
+    {
+      options[tunnelAttemptIDKey] = attemptID as NSString
+    }
+    return options
   }
 
   func eventQueueDirectory() -> URL? {

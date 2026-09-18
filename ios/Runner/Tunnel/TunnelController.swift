@@ -154,16 +154,30 @@ final class TunnelController {
     // a busy extension cannot be stampeded by every caller retrying at once.
     await acquireProviderMessageSlot()
     defer { releaseProviderMessageSlot() }
+    let profileEpoch = sharedStateStore.profileEpoch()
+    guard sharedStateStore.isCurrentProfileEpoch(profileEpoch) else {
+      throw ProviderMessageError(
+        code: "stale_profile",
+        message: "profile changed before network extension message"
+      )
+    }
     nextProviderMessageSequence &+= 1
     let sequence = nextProviderMessageSequence
 
     for attempt in 1...emptyReplyRetryLimit {
       do {
-        return try await sendProviderMessageAttempt(
+        let response = try await sendProviderMessageAttempt(
           data,
           sequence: sequence,
           attempt: attempt
         )
+        guard sharedStateStore.isCurrentProfileEpoch(profileEpoch) else {
+          throw ProviderMessageError(
+            code: "stale_profile",
+            message: "profile changed while awaiting network extension response"
+          )
+        }
+        return response
       } catch let error as ProviderMessageError
         where error.code == emptyReplyRetryCode
       {
@@ -320,6 +334,5 @@ final class TunnelController {
 
   private func log(_ message: String) {
     logger.debug("\(message, privacy: .public)")
-    NativeDiagnosticLog.shared.append(source: "Runner.TunnelController", message: message)
   }
 }

@@ -8,7 +8,7 @@ final class TunnelCoordinator {
   private let onTunnelStateChanged: (TunnelTarget) -> Void
   private let onExternalStart: () -> Void
   private let onExternalStop: () -> Void
-  private let connectTimeout: TimeInterval = 5
+  private let connectTimeout: TimeInterval = 30
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.follow.clash",
     category: "TunnelCoordinator"
@@ -283,8 +283,12 @@ final class TunnelCoordinator {
       }
 
       do {
-        try manager.connection.startVPNTunnel()
-        log("start requested")
+        let attemptID = managerStore.beginTunnelAttempt()
+        let payload = managerStore.prepareTunnelStartPayload()
+        log(
+          "start requested attempt=\(attemptID) snapshot=\(payload.snapshotCommitted)"
+        )
+        try manager.connection.startVPNTunnel(options: payload.options)
       } catch {
         if finishRunningRequestIfSatisfied(request, manager: manager) {
           return

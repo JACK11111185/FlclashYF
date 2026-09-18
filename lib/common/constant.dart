@@ -86,6 +86,7 @@ const configKey = 'config';
 const systemDnsRecordKey = 'system_dns_record';
 const bootRecordKey = 'boot_record';
 const defaultSystemDnsFallback = '223.5.5.5';
+const compatibleProxyName = 'COMPATIBLE';
 
 /// Survives app relaunches so a foreground return can tell whether the
 /// long-lived core already runs the config the app is about to apply.

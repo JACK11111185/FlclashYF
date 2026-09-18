@@ -67,14 +67,13 @@ void main() {
       final source = read('lib/providers/actions/proxies.dart');
       expect(
         source,
-        contains('static final _delayTestConcurrency = maxConcurrentDelayTests'),
+        contains(
+          'static final _delayTestConcurrency = maxConcurrentDelayTests',
+        ),
         reason: 'a const field would not pick up the platform value',
       );
-      expect(
-        source,
-        contains('_runningDelayTests < _delayTestConcurrency'),
-        reason: 'the drain loop must still honour the limit',
-      );
+      expect(source, contains('TaskPool(_delayTestConcurrency)'));
+      expect(source, contains('maxConcurrentDelayTests'));
     });
   });
 
@@ -106,7 +105,8 @@ void main() {
       expect(
         source,
         contains('providerMessageTimeout: TimeInterval = 8'),
-        reason: 'admission control is meant to make this budget hold, '
+        reason:
+            'admission control is meant to make this budget hold, '
             'not to be replaced by a longer one',
       );
     });
@@ -130,7 +130,8 @@ void main() {
       expect(
         source,
         contains('reclaimCooldown: TimeInterval = 15'),
-        reason: 'a lower reclaim threshold must not turn into a per-second stall',
+        reason:
+            'a lower reclaim threshold must not turn into a per-second stall',
       );
     });
   });

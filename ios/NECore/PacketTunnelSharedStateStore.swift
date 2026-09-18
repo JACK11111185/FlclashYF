@@ -11,6 +11,25 @@ enum PacketTunnelEnvironment {
     "\(extensionBundleIdentifier).event"
 }
 
+enum SharedStateSource: String {
+  case options
+  case defaults
+  case snapshot
+}
+
+enum SharedStateFailure: String {
+  case suiteUnavailable = "suite_unavailable"
+  case noData = "no_data"
+  case decodeFailed = "decode_failed"
+}
+
+struct SharedStateLoadResult {
+  let options: PacketTunnelVPNOptions?
+  let source: SharedStateSource?
+  let failure: SharedStateFailure?
+  let byteCount: Int
+}
+
 final class PacketTunnelSharedStateStore {
   private static let emptySetupParams = Data("{}".utf8)
 
@@ -19,38 +38,101 @@ final class PacketTunnelSharedStateStore {
   private let runTimeKey = "runTime"
   private let profileEpochKey = "profileEpoch"
   private let appliedProfileEpochKey = "appliedProfileEpoch"
+  private let tunnelAttemptIDKey = "tunnelAttemptID"
+  private let snapshotFileName = "shared-state.json"
+  private var startOptionsData: Data?
+
+  func adoptStartOptions(_ options: [String: NSObject]?) {
+    guard let options else { return }
+    if let text = options[sharedStateKey] as? String,
+      let data = text.data(using: .utf8)
+    {
+      startOptionsData = data
+      userDefaults?.set(data, forKey: sharedStateKey)
+    }
+    if let attemptID = options[tunnelAttemptIDKey] as? String {
+      userDefaults?.set(attemptID, forKey: tunnelAttemptIDKey)
+    }
+  }
+
+  func loadVPNOptionsResult() -> SharedStateLoadResult {
+    var failure: SharedStateFailure?
+    if let data = startOptionsData,
+      let options = decodeVPNOptions(data)
+    {
+      return SharedStateLoadResult(options: options, source: .options, failure: nil, byteCount: data.count)
+    } else if startOptionsData != nil {
+      failure = .decodeFailed
+    }
+    if let userDefaults {
+      if let data = userDefaults.data(forKey: sharedStateKey),
+        let options = decodeVPNOptions(data)
+      {
+        return SharedStateLoadResult(options: options, source: .defaults, failure: nil, byteCount: data.count)
+      } else if userDefaults.data(forKey: sharedStateKey) != nil {
+        failure = .decodeFailed
+      }
+    } else {
+      failure = .suiteUnavailable
+    }
+    if let data = snapshotData(), let options = decodeVPNOptions(data) {
+      userDefaults?.set(data, forKey: sharedStateKey)
+      return SharedStateLoadResult(options: options, source: .snapshot, failure: nil, byteCount: data.count)
+    }
+    return SharedStateLoadResult(
+      options: nil,
+      source: nil,
+      failure: failure ?? .noData,
+      byteCount: 0
+    )
+  }
 
   func loadVPNOptions() -> PacketTunnelVPNOptions? {
-    guard let data = userDefaults?.data(forKey: sharedStateKey),
-      let sharedState = try? JSONDecoder().decode(
-        PacketTunnelSharedState.self,
-        from: data
-      )
-    else {
-      return nil
-    }
+    loadVPNOptionsResult().options
+  }
+
+  private func decodeVPNOptions(_ data: Data) -> PacketTunnelVPNOptions? {
+    guard let sharedState = try? JSONDecoder().decode(
+      PacketTunnelSharedState.self,
+      from: data
+    ) else { return nil }
     return sharedState.vpnOptions
   }
 
-  func loadSetupParams() -> Data {
-    guard let userDefaults else {
-      return Self.emptySetupParams
+  private func snapshotData() -> Data? {
+    guard let url = appGroupDirectory()?.appendingPathComponent(snapshotFileName) else {
+      return nil
     }
-    if let data = userDefaults.data(forKey: setupParamsKey) {
+    return try? Data(contentsOf: url)
+  }
+
+  func loadSetupParams() -> Data {
+    if let data = startOptionsData, let params = setupParams(from: data) {
+      return params
+    }
+    if let data = userDefaults?.data(forKey: setupParamsKey) {
       return data
     }
-    guard let sharedStateData = userDefaults.data(forKey: sharedStateKey),
-      let json = try? JSONSerialization.jsonObject(with: sharedStateData)
-        as? [String: Any],
-      let setupParams = json[setupParamsKey],
-      !(setupParams is NSNull),
-      JSONSerialization.isValidJSONObject(setupParams),
-      let data = try? JSONSerialization.data(withJSONObject: setupParams)
-    else {
-      return Self.emptySetupParams
+    if let data = userDefaults?.data(forKey: sharedStateKey),
+      let params = setupParams(from: data)
+    {
+      userDefaults?.set(params, forKey: setupParamsKey)
+      return params
     }
-    userDefaults.set(data, forKey: setupParamsKey)
-    return data
+    if let data = snapshotData(), let params = setupParams(from: data) {
+      userDefaults?.set(params, forKey: setupParamsKey)
+      return params
+    }
+    return Self.emptySetupParams
+  }
+
+  private func setupParams(from data: Data) -> Data? {
+    guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+      let params = json[setupParamsKey],
+      !(params is NSNull),
+      JSONSerialization.isValidJSONObject(params)
+    else { return nil }
+    return try? JSONSerialization.data(withJSONObject: params)
   }
 
   func profileEpoch() -> UInt64 {

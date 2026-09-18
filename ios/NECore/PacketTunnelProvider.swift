@@ -32,6 +32,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
   private var suspendSupport = true
   private var profileEpoch: UInt64?
+  private let resourceHeartbeat = NativeResourceHeartbeat()
 
   override func startTunnel(
     options: [String: NSObject]?,
@@ -41,8 +42,12 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     logger.info("startTunnel begin")
     sharedStateStore.clearRunTime()
     reloadControlWidget()
-    guard let vpnOptions = sharedStateStore.loadVPNOptions() else {
-      logger.error("startTunnel failed: missing vpn options")
+    sharedStateStore.adoptStartOptions(options)
+    let stateResult = sharedStateStore.loadVPNOptionsResult()
+    guard let vpnOptions = stateResult.options else {
+      logger.error(
+        "startTunnel failed: missing vpn options source=\(stateResult.failure?.rawValue ?? \"unknown\")"
+      )
       completionHandler(PacketTunnelProviderError.missingVPNOptions)
       return
     }
@@ -126,6 +131,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
           self.sharedStateStore.markProfileEpochApplied(epoch)
           self.profileEpoch = epoch
           self.sharedStateStore.saveRunTime()
+          self.resourceHeartbeat.start()
         }
         completionHandler(
           started ? nil : PacketTunnelProviderError.couldNotStartCoreTun
@@ -142,6 +148,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     sharedStateStore.clearRunTime()
     reloadControlWidget()
     eventQueue.stop()
+    resourceHeartbeat.stop()
     NECoreBridge.stopTun()
     guard reason == .userInitiated else {
       completionHandler()

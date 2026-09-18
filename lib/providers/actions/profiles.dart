@@ -9,14 +9,22 @@ class ProfilesAction extends _$ProfilesAction {
 
   void updateCurrentSelectedMap(String groupName, String proxyName) {
     final currentProfile = ref.read(currentProfileProvider);
-    if (currentProfile != null &&
-        currentProfile.selectedMap[groupName] != proxyName) {
-      final selectedMap = Map<String, String>.from(currentProfile.selectedMap)
-        ..[groupName] = proxyName;
-      ref
-          .read(profilesProvider.notifier)
-          .put(currentProfile.copyWith(selectedMap: selectedMap));
+    if (currentProfile == null) return;
+    final selectedMap = Map<String, String>.from(currentProfile.selectedMap);
+    if (proxyName.isEmpty || proxyName == compatibleProxyName) {
+      selectedMap.remove(groupName);
+    } else {
+      selectedMap[groupName] = proxyName;
     }
+    final unchanged =
+        selectedMap.length == currentProfile.selectedMap.length &&
+        selectedMap.entries.every(
+          (entry) => currentProfile.selectedMap[entry.key] == entry.value,
+        );
+    if (unchanged) return;
+    ref
+        .read(profilesProvider.notifier)
+        .put(currentProfile.copyWith(selectedMap: selectedMap));
   }
 
   Future<void> deleteProfile(int id) async {

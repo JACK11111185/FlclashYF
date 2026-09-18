@@ -33,6 +33,11 @@ private enum ManagerLoadError: LocalizedError {
   }
 }
 
+struct TunnelStartPayload {
+  let options: [String: NSObject]
+  let snapshotCommitted: Bool
+}
+
 @MainActor
 final class TunnelManagerStore {
   private let sharedStateStore: SharedStateStore
@@ -42,7 +47,7 @@ final class TunnelManagerStore {
     subsystem: Bundle.main.bundleIdentifier ?? "com.follow.clash",
     category: "TunnelManagerStore"
   )
-  private let loadTimeout: TimeInterval = 5
+  private let loadTimeout: TimeInterval = 15
   private let maxInvalidationReloadCount = 1
 
   private var cacheGeneration: UInt64 = 0
@@ -179,6 +184,20 @@ final class TunnelManagerStore {
       return false
     }
     return proto.providerBundleIdentifier == networkExtensionIdentifier
+  }
+
+  func beginTunnelAttempt() -> String {
+    sharedStateStore.beginTunnelAttempt()
+  }
+
+  func prepareTunnelStartPayload() -> TunnelStartPayload {
+    let committed = sharedStateStore.sharedStateData().map {
+      sharedStateStore.commitSharedStateSnapshot($0)
+    } ?? false
+    return TunnelStartPayload(
+      options: sharedStateStore.makeTunnelStartOptions(),
+      snapshotCommitted: committed
+    )
   }
 
   func isCachedConnection(_ connection: NEVPNConnection) -> Bool {

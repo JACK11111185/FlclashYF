@@ -28,15 +28,16 @@ void main() {
 
     test('the storage key is a real constant, not an inline literal', () {
       final constant = source('lib/common/constant.dart');
-      expect(constant, contains("const appliedConfigMd5Key = 'applied_config_md5'"));
+      expect(
+        constant,
+        contains("const appliedConfigMd5Key = 'applied_config_md5'"),
+      );
     });
 
     test('setup falls back to the persisted md5 when memory has none', () {
       final setup = source('lib/providers/actions/setup.dart');
-      expect(
-        setup,
-        contains('globalState.lastConfigMd5 ??\n        await preferences.getAppliedConfigMd5()'),
-      );
+      expect(setup, contains('final appliedMd5 ='));
+      expect(setup, contains('preferences.getAppliedConfigMd5()'));
     });
 
     test('a successful push records the fingerprint durably', () {
@@ -48,16 +49,15 @@ void main() {
   group('redundant reloads are skipped, real ones are not', () {
     test('iOS skips a forced apply only while the tunnel is running', () {
       final setup = source('lib/providers/actions/setup.dart');
-      expect(
-        setup,
-        contains('matchesAppliedConfig && (!force || (system.isIOS && _isRunning))'),
-      );
+      expect(setup, contains('!profileSwitched &&'));
+      expect(setup, contains('(!force || (system.isIOS && _isRunning))'));
     });
 
     test('the skip is gated on the on-disk config actually matching', () {
       final setup = source('lib/providers/actions/setup.dart');
-      expect(setup, contains('final diskMatches = await configFile.exists()'));
-      expect(setup, contains(".readAsString()).toMd5() == yamlMd5"));
+      expect(setup, contains('final diskMatches ='));
+      expect(setup, contains('configFile.exists()'));
+      expect(setup, contains('.readAsString()).toMd5() == yamlMd5'));
     });
 
     test('skipping the push still starts the core and refills UI state', () {
@@ -74,7 +74,7 @@ void main() {
 
     test('stopping the tunnel forgets the fingerprint on iOS', () {
       final setup = source('lib/providers/actions/setup.dart');
-      final stopStart = setup.indexOf('Future<void> _stop(_RunRequest request)');
+      final stopStart = setup.indexOf('Future<bool> _stop(_RunRequest request)');
       final stopEnd = setup.indexOf('Future<void> _setCoreRunning');
       expect(stopStart, greaterThan(-1));
       expect(stopEnd, greaterThan(stopStart));
