@@ -118,6 +118,18 @@ final class TunnelController {
     try await coordinator.reloadOnDemandRules()
   }
 
+  func profileDidChange() {
+    managerStore.invalidateCachedManager()
+  }
+
+  func didApplyCurrentProfile() {
+    sharedStateStore.markCurrentProfileApplied()
+  }
+
+  func isCurrentProfileApplied() -> Bool {
+    sharedStateStore.isCurrentProfileApplied()
+  }
+
   /// Suspends until a provider-message slot frees up. `@MainActor` isolation is
   /// what makes the counter safe: every mutation happens on the main actor.
   private func acquireProviderMessageSlot() async {
