@@ -57,6 +57,33 @@ func TestHandleConvertURISubscriptionConvertsXlessToPure(t *testing.T) {
 	}
 }
 
+func TestHandleConvertURISubscriptionSupportsMagicVMessWebSocketTLS(t *testing.T) {
+	line := "vmess://eyJ2IjoiMiIsInBzIjoi5ruR57+U5LyeLeaXpeacrC0xOCIsImFkZCI6IjEzNy4yMjAuMTQyLjEwMSIsInBvcnQiOiI0NDMiLCJpZCI6IjQyMmY3YmM2LTI0MWMtNDk1OC1iM2NlLWZmNTVmNTZkZmZkMCIsImFpZCI6IjEwMDIiLCJzY3kiOiJub25lIiwibmV0Ijoid3MiLCJ0eXBlIjoibm9uZSIsImhvc3QiOiJ3d3cuZ3JycGV0dm0udG9wIiwicGF0aCI6Ii9oYXZlYW5pY2VkYXkiLCJ0bHMiOiJ0bHMiLCJzbmkiOiJ3d3cuZ3JycGV0dm0udG9wIn0="
+	proxies, err := handleConvertURISubscription(line)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(proxies) != 1 {
+		t.Fatalf("got %d proxies", len(proxies))
+	}
+	proxy := proxies[0]
+	if got := proxy["server"]; got != "137.220.142.101" {
+		t.Fatalf("server=%v", got)
+	}
+	if got := proxy["port"]; got != "443" {
+		t.Fatalf("port=%v", got)
+	}
+	if got := proxy["network"]; got != "ws" {
+		t.Fatalf("network=%v", got)
+	}
+	if got := proxy["tls"]; got != true {
+		t.Fatalf("tls=%v", got)
+	}
+	if got := proxy["path"]; got != "/haveaniceday" {
+		t.Fatalf("path=%v", got)
+	}
+}
+
 func TestHandleConvertURISubscriptionRejectsUnsupportedInput(t *testing.T) {
 	_, err := handleConvertURISubscription("not a subscription")
 	if err == nil {
