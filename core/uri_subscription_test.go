@@ -79,8 +79,15 @@ func TestHandleConvertURISubscriptionSupportsMagicVMessWebSocketTLS(t *testing.T
 	if got := proxy["tls"]; got != true {
 		t.Fatalf("tls=%v", got)
 	}
-	if got := proxy["path"]; got != "/haveaniceday" {
+	wsOpts, ok := proxy["ws-opts"].(map[string]any)
+	if !ok {
+		t.Fatalf("ws-opts=%T (%v)", proxy["ws-opts"], proxy["ws-opts"])
+	}
+	if got := wsOpts["path"]; got != "/haveaniceday" {
 		t.Fatalf("path=%v", got)
+	}
+	if got := wsOpts["headers"]; got == nil {
+		t.Fatal("missing WebSocket headers")
 	}
 }
 
